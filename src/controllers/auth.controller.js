@@ -48,6 +48,7 @@ exports.login = async (req, res) => {
     );
 
     res.json({
+      message: "Login exitoso",
       token,
       user: {
         id: user.id,
@@ -60,3 +61,5 @@ exports.login = async (req, res) => {
     res.status(500).json({ error: "Error al iniciar sesión" });
   }
 };
+
+

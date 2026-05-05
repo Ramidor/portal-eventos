@@ -12,7 +12,9 @@ app.get("/", (req, res) => {
 });
 
 const authRoutes = require("./src/routes/auth.routes");
+const eventRoutes = require("./src/routes/event.routes");
 app.use("/auth", authRoutes);
+app.use("/events", eventRoutes);
 
 app.listen(3000, () => {
   console.log("Servidor en http://localhost:3000");
