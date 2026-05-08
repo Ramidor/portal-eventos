@@ -6,7 +6,8 @@ module.exports = (req, res, next) => {
   if (!token) return res.status(401).json({ error: "Acceso denegado" });
 
   try {
-    const verified = jwt.verify(token, process.env.JWT_SECRET || "secreto_super_seguro");
+    if (!process.env.JWT_SECRET) throw new Error("JWT_SECRET no definido");
+    const verified = jwt.verify(token, process.env.JWT_SECRET);
     req.user = verified; // Guardamos los datos del usuario en la petición
     next();
   } catch (error) {
