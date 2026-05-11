@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const prisma = require(".../config/prisma");
+const prisma = require("../config/prisma");
 
 /**
  * Inicializa el muro de mensajes en tiempo real sobre una instancia de Socket.io.
@@ -21,26 +21,30 @@ const prisma = require(".../config/prisma");
 module.exports = (io) => {
   // ── Middleware de autenticación Socket.io ──────────────────────────────────
   io.use((socket, next) => {
-    const token = socket.handshake.auth?.token;
+  const token = socket.handshake.auth?.token;
+  console.log("[WS middleware] token recibido:", token ? "sí" : "NO");
 
-    if (!token) {
-      return next(new Error("Token no proporcionado"));
-    }
+  if (!token) return next(new Error("Token no proporcionado"));
 
-    try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      socket.user = jwt.decoded; // { id, email }
-      next();
-    } catch {
-      next(new Error("Token no válido"));
-    }
-  });
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    socket.user = decoded;
+    console.log("[WS middleware] usuario:", decoded.email);
+    next();
+  } catch (err) {
+    console.log("[WS middleware] error verificando token:", err.message);
+    next(new Error("Token no válido"));
+  }
+});
 
   // ── Conexión ───────────────────────────────────────────────────────────────
   io.on("connection", (socket) => {
-    console.log(
-      `[WS] Usuario ${socket.user.email} conectado (socket: ${socket.id})`,
-    );
+  if (!socket.user) {
+    socket.disconnect();
+    return;
+  }
+
+  console.log(`[WS] Usuario ${socket.user.email} conectado (socket: ${socket.id})`);
 
     // ── joinEvent ────────────────────────────────────────────────────────────
     socket.on("joinEvent", async ({ eventId }) => {

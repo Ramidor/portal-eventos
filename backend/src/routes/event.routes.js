@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const eventController = require("../controllers/event.controller");
+const enrollmentController = require("../controllers/enrollment.controller");
 const auth = require("../middlewares/auth.middleware");
 
 // Ruta pública: Cualquiera puede ver los eventos

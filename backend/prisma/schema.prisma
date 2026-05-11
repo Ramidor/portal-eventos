@@ -14,6 +14,18 @@ enum Role {
   ADMIN
 }
 
+enum Category {
+  MUSICA
+  DEPORTE
+  ARTE
+  TECNOLOGIA
+  GASTRONOMIA
+  EDUCACION
+  NEGOCIOS
+  OTRO
+}
+
+
 // 2. Tabla de Usuarios
 model User {
   id          Int          @id @default(autoincrement())
@@ -32,20 +44,24 @@ model User {
 
 // 3. Tabla de Eventos
 model Event {
-  id          Int          @id @default(autoincrement())
+  id          Int       @id @default(autoincrement())
   title       String
-  description String
+  description String?
   date        DateTime
   location    String
-  image       String?      // URL de imagen opcional
+  latitude    Float?
+  longitude   Float?
+  image       String?
+  category    Category  @default(OTRO)
   creatorId   Int
-  createdAt   DateTime     @default(now())
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
-  // Relaciones
   creator     User         @relation("UserToOrganizer", fields: [creatorId], references: [id])
   enrollments Enrollment[]
   messages    Message[]
 }
+
 
 // 4. Tabla de Inscripciones (Relación Muchos a Muchos)
 model Enrollment {

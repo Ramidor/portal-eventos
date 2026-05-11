@@ -1,4 +1,4 @@
-const prisma = require(".../config/prisma");
+const prisma = require("../config/prisma");
 const e = require("express");
 
 // ─────────────────────────────────────────────
@@ -49,7 +49,7 @@ exports.enroll = async (req, res) => {
 // ─────────────────────────────────────────────
 exports.unenroll = async (req, res) => {
   try {
-    const enventId = Number(req.params.id);
+    const eventId = Number(req.params.id);
     const userId = req.user.id;
 
     const enrollment = await prisma.enrollment.findUnique({
@@ -79,10 +79,10 @@ exports.unenroll = async (req, res) => {
 // ─────────────────────────────────────────────
 exports.getEnrollments = async (req, res) => {
   try {
-    const enventId = Number(req.params.id);
+    const eventId = Number(req.params.id);
 
     const event = await prisma.event.findUnique({
-      where: { id: { enventId } },
+      where: { id: eventId },
     });
 
     if (!event) {
