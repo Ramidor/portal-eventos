@@ -11,14 +11,22 @@ export default function LoginPage() {
   const [form, setForm]       = useState({ email: "", password: "" });
   const [error, setError]     = useState("");
   const [loading, setLoading] = useState(false);
+  // 1. NUEVO: Estado para saber si el error es de verificación
+  const [needsVerification, setNeedsVerification] = useState(false); 
 
   const justVerified = searchParams.get("verified") === "true";
 
-  const handleChange = (e) => { setForm({ ...form, [e.target.name]: e.target.value }); setError(""); };
+  const handleChange = (e) => { 
+    setForm({ ...form, [e.target.name]: e.target.value }); 
+    setError(""); 
+    setNeedsVerification(false); // Reseteamos si el usuario escribe
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setNeedsVerification(false);
+    
     try {
       const { data } = await api.post("/auth/login", form);
       login(data.user, data.token);
@@ -26,8 +34,11 @@ export default function LoginPage() {
     } catch (err) {
       const serverError = err.response?.data?.error || "Error al iniciar sesión";
       const code        = err.response?.data?.code;
+      
+      // 2. MODIFICADO: Activamos el estado si el backend nos devuelve el código
       if (code === "EMAIL_NOT_VERIFIED") {
-        setError("Debes verificar tu email antes de entrar. Revisa tu bandeja de entrada.");
+        setError("Debes verificar tu email antes de entrar.");
+        setNeedsVerification(true);
       } else {
         setError(serverError);
       }
@@ -76,16 +87,22 @@ export default function LoginPage() {
               <input type="password" name="password" value={form.password} onChange={handleChange} required placeholder="••••••••"
                 className="w-full bg-stone-900 border border-stone-700 text-stone-100 rounded-lg px-4 py-3 text-sm placeholder-stone-600 focus:outline-none focus:border-amber-400 transition-colors" />
             </div>
+            
+            {/* 3. MODIFICADO: Bloque de error mucho más limpio */}
             {error && (
               <div className="text-red-400 text-xs font-mono bg-red-950/30 border border-red-900 rounded-lg px-4 py-3">
                 <p>{error}</p>
-                {error.includes("verificar") && (
-                  <Link to="/resend-verification" className="text-amber-400 hover:text-amber-300 underline mt-1 block">
-                    Reenviar email de verificación →
+                {needsVerification && (
+                  <Link 
+                    to={`/verify-email?email=${encodeURIComponent(form.email)}`} 
+                    className="text-amber-400 hover:text-amber-300 underline mt-2 block font-bold"
+                  >
+                    Haz clic aquí para introducir tu código →
                   </Link>
                 )}
               </div>
             )}
+
             <button type="submit" disabled={loading}
               className="w-full bg-amber-400 hover:bg-amber-300 disabled:bg-stone-700 disabled:text-stone-500 text-stone-950 font-semibold py-3 rounded-lg text-sm transition-colors duration-200 cursor-pointer">
               {loading ? "Entrando..." : "Entrar"}

@@ -1,30 +1,41 @@
-const prisma  = require("../config/prisma");
-const bcrypt  = require("bcrypt");
-const jwt     = require("jsonwebtoken");
-const crypto  = require("crypto");
+const prisma = require("../config/prisma");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
 const { sendVerificationEmail } = require("../services/email.service");
+
+// Función auxiliar para generar 6 números aleatorios
+const generateOTP = () =>
+  Math.floor(100000 + Math.random() * 900000).toString();
 
 exports.register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
     if (!name || !email || !password) {
-      return res.status(400).json({ error: "Faltan campos obligatorios: name, email, password" });
+      return res
+        .status(400)
+        .json({ error: "Faltan campos obligatorios: name, email, password" });
     }
-    if (password.length < 6) {
-      return res.status(400).json({ error: "La contraseña debe tener al menos 6 caracteres" });
+    // Validación de seguridad de contraseña (Min 6 caracteres, 1 número, 1 símbolo)
+    const passwordRegex = /^(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{6,})/;
+    if (!passwordRegex.test(password)) {
+      return res.status(400).json({
+        error:
+          "La contraseña debe tener al menos 6 caracteres, un número y un símbolo (!@#$%^&*)",
+      });
     }
 
-    const hashedPassword    = await bcrypt.hash(password, 10);
-    const verificationToken = crypto.randomBytes(32).toString("hex");
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const verificationCode = generateOTP(); // Genera un código OTP de 6 dígitos
 
     const user = await prisma.user.create({
-      data: { name, email, password: hashedPassword, verificationToken },
+      data: { name, email, password: hashedPassword, verificationCode },
     });
 
     // Enviar email de verificación (no bloqueante — si falla, el usuario ya está creado)
     try {
-      await sendVerificationEmail(email, verificationToken);
+      await sendVerificationEmail(email, verificationCode);
     } catch (mailError) {
       console.error("[EMAIL] Error al enviar verificación:", mailError.message);
     }
@@ -46,19 +57,24 @@ exports.login = async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ error: "Faltan campos obligatorios: email, password" });
+      return res
+        .status(400)
+        .json({ error: "Faltan campos obligatorios: email, password" });
     }
 
     const user = await prisma.user.findUnique({ where: { email } });
-    if (!user) return res.status(400).json({ error: "Credenciales incorrectas" });
+    if (!user)
+      return res.status(400).json({ error: "Credenciales incorrectas" });
 
     const validPassword = await bcrypt.compare(password, user.password);
-    if (!validPassword) return res.status(400).json({ error: "Credenciales incorrectas" });
+    if (!validPassword)
+      return res.status(400).json({ error: "Credenciales incorrectas" });
 
     // Bloquear login si el email no está verificado
     if (!user.emailVerified) {
       return res.status(403).json({
-        error: "Debes verificar tu email antes de iniciar sesión. Revisa tu bandeja de entrada.",
+        error:
+          "Debes verificar tu email antes de iniciar sesión. Revisa tu bandeja de entrada.",
         code: "EMAIL_NOT_VERIFIED",
       });
     }
@@ -66,13 +82,18 @@ exports.login = async (req, res) => {
     const token = jwt.sign(
       { id: user.id, email: user.email, role: user.role },
       process.env.JWT_SECRET,
-      { expiresIn: "1h" }
+      { expiresIn: "1h" },
     );
 
     res.json({
       message: "Login exitoso",
       token,
-      user: { id: user.id, name: user.name, email: user.email, role: user.role },
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
     });
   } catch (error) {
     console.error(error);
@@ -82,27 +103,46 @@ exports.login = async (req, res) => {
 
 exports.verifyEmail = async (req, res) => {
   try {
-    const { token } = req.query;
+    const { email, code } = req.body;
 
-    if (!token) return res.status(400).json({ error: "Token no proporcionado" });
-
-    const user = await prisma.user.findUnique({
-      where: { verificationToken: token },
-    });
-
-    if (!user) {
-      return res.status(400).json({ error: "Token no válido o ya utilizado" });
+    if (!email || !code) {
+      return res.status(400).json({ error: "Email y código requeridos" });
     }
 
+    const user = await prisma.user.findUnique({ where: { email } });
+
+    if (!user) return res.status(400).json({ error: "Usuario no encontrado" });
+    if (user.emailVerified)
+      return res.status(400).json({ error: "El email ya está verificado" });
+    if (user.verificationCode !== code)
+      return res.status(400).json({ error: "Código incorrecto" });
+
+    // Código correcto, actualizamos el usuario
     await prisma.user.update({
       where: { id: user.id },
-      data: { emailVerified: true, verificationToken: null },
+      data: { emailVerified: true, verificationCode: null },
+    });
+    // 2. Marcar como verificado y limpiar campos de seguridad
+    const updatedUser = await prisma.user.update({
+      where: { id: user.id },
+      data: { 
+        emailVerified: true, 
+        verificationCode: null
+      },
     });
 
-    // Redirigir al login con mensaje de éxito
-    res.redirect(`${process.env.CLIENT_URL}/login?verified=true`);
+    const token = jwt.sign(
+      { id: updatedUser.id, email: updatedUser.email, role: updatedUser.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "24h" }
+    );
+
+    res.json({ 
+      message: "Email verificado e inicio de sesión exitoso",
+      token,
+      user: { id: updatedUser.id, name: updatedUser.name, email: updatedUser.email, role: updatedUser.role }
+    });
   } catch (error) {
-    console.error(error);
     res.status(500).json({ error: "Error al verificar el email" });
   }
 };
@@ -114,22 +154,23 @@ exports.resendVerification = async (req, res) => {
 
     const user = await prisma.user.findUnique({ where: { email } });
 
-    // Respuesta genérica para no revelar si el email existe
     if (!user || user.emailVerified) {
-      return res.json({ message: "Si el email existe y no está verificado, recibirás un nuevo enlace." });
+      return res.json({
+        message:
+          "Si el email existe y no está verificado, recibirás un nuevo código.",
+      });
     }
 
-    const verificationToken = crypto.randomBytes(32).toString("hex");
+    const verificationCode = generateOTP();
     await prisma.user.update({
       where: { id: user.id },
-      data: { verificationToken },
+      data: { verificationCode },
     });
 
-    await sendVerificationEmail(email, verificationToken);
+    await sendVerificationEmail(email, verificationCode);
 
-    res.json({ message: "Email de verificación reenviado." });
+    res.json({ message: "Código de verificación reenviado." });
   } catch (error) {
-    console.error(error);
     res.status(500).json({ error: "Error al reenviar verificación" });
   }
 };

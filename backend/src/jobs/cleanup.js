@@ -13,10 +13,18 @@ function startCleanupJob() {
       const { count } = await prisma.event.deleteMany({
         where: { date: { lt: cutoff } },
       });
-      console.log(`[CRON] Limpieza completada: ${count} evento(s) eliminado(s)`);
+      console.log(
+        `[CRON] Limpieza completada: ${count} evento(s) eliminado(s)`,
+      );
     } catch (error) {
       console.error("[CRON] Error en limpieza de eventos:", error);
     }
+    await prisma.user.deleteMany({
+      where: {
+        emailVerified: false,
+        createdAt: { lt: new Date(Date.now() - 24 * 60 * 60 * 1000) },
+      },
+    });
   });
 
   console.log("[CRON] Job de limpieza iniciado (diario a las 03:00)");

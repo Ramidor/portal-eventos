@@ -8,16 +8,25 @@ export default function RegisterPage() {
   const [error, setError]     = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) => { setForm({ ...form, [e.target.name]: e.target.value }); setError(""); };
+  const handleChange = (e) => { 
+    setForm({ ...form, [e.target.name]: e.target.value }); 
+    setError(""); 
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (form.password.length < 6) return setError("La contraseña debe tener al menos 6 caracteres");
+    
+    // 1. Nueva validación de contraseña en el Frontend
+    const passwordRegex = /^(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{6,})/;
+    if (!passwordRegex.test(form.password)) {
+      return setError("La contraseña debe tener al menos 6 caracteres, un número y un símbolo (!@#$%^&*)");
+    }
+
     setLoading(true);
     try {
       await api.post("/auth/register", form);
-      // No hacemos login automático — el usuario debe verificar su email primero
-      navigate("/verify-email");
+      // 2. Pasamos el email como parámetro en la URL para que la página de verificación lo recoja
+      navigate(`/verify-email?email=${encodeURIComponent(form.email)}`);
     } catch (err) {
       setError(err.response?.data?.error || "Error al registrarse");
     } finally {
@@ -60,7 +69,8 @@ export default function RegisterPage() {
             </div>
             <div>
               <label className="block text-stone-400 text-xs font-mono tracking-widest uppercase mb-2">Contraseña</label>
-              <input type="password" name="password" value={form.password} onChange={handleChange} required placeholder="Mínimo 6 caracteres"
+              <input type="password" name="password" value={form.password} onChange={handleChange} required 
+                placeholder="Mínimo 6 caracteres, 1 número y 1 símbolo" /* 3. Placeholder actualizado */
                 className="w-full bg-stone-900 border border-stone-700 text-stone-100 rounded-lg px-4 py-3 text-sm placeholder-stone-600 focus:outline-none focus:border-amber-400 transition-colors" />
             </div>
             {error && <p className="text-red-400 text-xs font-mono bg-red-950/30 border border-red-900 rounded-lg px-4 py-3">{error}</p>}
