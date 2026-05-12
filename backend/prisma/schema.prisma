@@ -1,4 +1,3 @@
-// Configuración del generador y la fuente de datos
 generator client {
   provider = "prisma-client-js"
 }
@@ -8,7 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// 1. Definición de Roles
 enum Role {
   USER
   ADMIN
@@ -25,60 +23,54 @@ enum Category {
   OTRO
 }
 
-
-// 2. Tabla de Usuarios
 model User {
   id          Int          @id @default(autoincrement())
   name        String
   email       String       @unique
   password    String
   role        Role         @default(USER)
+  emailVerified   Boolean  @default(false)
+  verificationCode Int?     @unique
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
-  // Relaciones
-  organizedEvents Event[]      @relation("UserToOrganizer") // Eventos que este usuario ha creado
-  enrollments     Enrollment[]                              // Eventos a los que se ha inscrito
-  messages        Message[]                                 // Mensajes que ha escrito en muros
+  organizedEvents Event[]      @relation("UserToOrganizer")
+  enrollments     Enrollment[]
+  messages        Message[]
 }
 
-// 3. Tabla de Eventos
 model Event {
-  id          Int       @id @default(autoincrement())
-  title       String
-  description String?
-  date        DateTime
-  location    String
-  latitude    Float?
-  longitude   Float?
-  image       String?
-  category    Category  @default(OTRO)
-  creatorId   Int
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id           Int       @id @default(autoincrement())
+  title        String
+  description  String?
+  date         DateTime
+  location     String
+  latitude     Float?
+  longitude    Float?
+  image        String?
+  category     Category  @default(OTRO)
+  maxAttendees Int?                    // null = sin límite
+  creatorId    Int
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   creator     User         @relation("UserToOrganizer", fields: [creatorId], references: [id])
   enrollments Enrollment[]
   messages    Message[]
 }
 
-
-// 4. Tabla de Inscripciones (Relación Muchos a Muchos)
 model Enrollment {
   id        Int      @id @default(autoincrement())
   userId    Int
   eventId   Int
   createdAt DateTime @default(now())
 
-  // Relaciones
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
-  // Un usuario no puede inscribirse dos veces al mismo evento
   @@unique([userId, eventId])
 }
 
-// 5. Tabla de Mensajes (El Muro)
 model Message {
   id        Int      @id @default(autoincrement())
   content   String
@@ -86,7 +78,6 @@ model Message {
   eventId   Int
   createdAt DateTime @default(now())
 
-  // Relaciones
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
 }
