@@ -22,17 +22,14 @@ module.exports = (io) => {
   // ── Middleware de autenticación Socket.io ──────────────────────────────────
   io.use((socket, next) => {
   const token = socket.handshake.auth?.token;
-  console.log("[WS middleware] token recibido:", token ? "sí" : "NO");
 
   if (!token) return next(new Error("Token no proporcionado"));
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     socket.user = decoded;
-    console.log("[WS middleware] usuario:", decoded.email);
     next();
   } catch (err) {
-    console.log("[WS middleware] error verificando token:", err.message);
     next(new Error("Token no válido"));
   }
 });
@@ -43,8 +40,6 @@ module.exports = (io) => {
     socket.disconnect();
     return;
   }
-
-  console.log(`[WS] Usuario ${socket.user.email} conectado (socket: ${socket.id})`);
 
     // ── joinEvent ────────────────────────────────────────────────────────────
     socket.on("joinEvent", async ({ eventId }) => {
@@ -74,7 +69,6 @@ module.exports = (io) => {
 
         const room = `event:${eventId}`;
         socket.join(room);
-        console.log(`[WS] ${socket.user.email} se unió a la sala ${room}`);
 
         // Enviar historial de mensajes al cliente que acaba de entrar
         const history = await prisma.message.findMany({
@@ -130,14 +124,9 @@ module.exports = (io) => {
 
     // ── leaveEvent ───────────────────────────────────────────────────────────
     socket.on("leaveEvent", ({ eventId }) => {
-      const room = `event:${eventId}`;
-      socket.leave(room);
-      console.log(`[WS] ${socket.user.email} salió de la sala ${room}`);
+      socket.leave(`event:${eventId}`);
     });
 
-    // ── Desconexión ──────────────────────────────────────────────────────────
-    socket.on("disconnect", () => {
-      console.log(`[WS] Usuario ${socket.user.email} desconectado`);
-    });
+    socket.on("disconnect", () => {});
   });
 };

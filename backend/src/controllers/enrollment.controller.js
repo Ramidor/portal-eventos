@@ -93,6 +93,23 @@ exports.getEnrollments = async (req, res) => {
 };
 
 // ─────────────────────────────────────────────
+// GET /events/:id/enrollments/me  →  Privado
+// ─────────────────────────────────────────────
+exports.getMyEnrollmentStatus = async (req, res) => {
+  try {
+    const eventId = Number(req.params.id);
+    const userId  = req.user.id;
+    const enrollment = await prisma.enrollment.findUnique({
+      where: { userId_eventId: { userId, eventId } },
+    });
+    res.json({ isEnrolled: !!enrollment });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error al comprobar inscripción" });
+  }
+};
+
+// ─────────────────────────────────────────────
 // GET /users/me/enrollments  →  Privado
 // ─────────────────────────────────────────────
 exports.getMyEnrollments = async (req, res) => {

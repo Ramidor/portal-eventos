@@ -5,7 +5,6 @@ import useWall from "../hooks/useWall";
 
 export default function EventWall({ eventId }) {
   const { user, token } = useAuth();
-  console.log("EventWall montado:", { eventId, token }); // ← añade esto
   const navigate = useNavigate();
   const { messages, connected, error, sendMessage } = useWall(eventId, token);
   const [input, setInput] = useState("");

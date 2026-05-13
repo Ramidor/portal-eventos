@@ -5,19 +5,45 @@ const VALID_CATEGORIES = ["MUSICA","DEPORTE","ARTE","TECNOLOGIA","GASTRONOMIA","
 exports.getAll = async (req, res) => {
   try {
     const { category, location } = req.query;
+    const page  = Math.max(1, Number(req.query.page)  || 1);
+    const limit = Math.min(50, Number(req.query.limit) || 20);
+    const skip  = (page - 1) * limit;
+
     const where = { date: { gte: new Date() } };
     if (category && VALID_CATEGORIES.includes(category)) where.category = category;
     if (location) where.location = { contains: location, mode: "insensitive" };
 
+    const [events, total] = await Promise.all([
+      prisma.event.findMany({
+        where,
+        include: {
+          creator: { select: { id: true, name: true, email: true } },
+          _count: { select: { enrollments: true } },
+        },
+        orderBy: { date: "asc" },
+        skip,
+        take: limit,
+      }),
+      prisma.event.count({ where }),
+    ]);
+
+    res.json({ total, page, limit, events });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error al obtener eventos" });
+  }
+};
+
+exports.adminGetAll = async (req, res) => {
+  try {
     const events = await prisma.event.findMany({
-      where,
       include: {
         creator: { select: { id: true, name: true, email: true } },
         _count: { select: { enrollments: true } },
       },
-      orderBy: { date: "asc" },
+      orderBy: { date: "desc" },
     });
-    res.json(events);
+    res.json({ total: events.length, events });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Error al obtener eventos" });
@@ -126,11 +152,12 @@ exports.update = async (req, res) => {
 
 exports.remove = async (req, res) => {
   try {
-    const { id }  = req.params;
-    const userId  = req.user.id;
-    const event   = await prisma.event.findUnique({ where: { id: Number(id) } });
-    if (!event)                    return res.status(404).json({ error: "Evento no encontrado" });
-    if (event.creatorId !== userId) return res.status(403).json({ error: "No tienes permiso para eliminar este evento" });
+    const { id }    = req.params;
+    const userId    = req.user.id;
+    const isAdmin   = req.user.role === "ADMIN";
+    const event     = await prisma.event.findUnique({ where: { id: Number(id) } });
+    if (!event)                                  return res.status(404).json({ error: "Evento no encontrado" });
+    if (!isAdmin && event.creatorId !== userId)  return res.status(403).json({ error: "No tienes permiso para eliminar este evento" });
     await prisma.event.delete({ where: { id: Number(id) } });
     res.json({ message: "Evento eliminado correctamente" });
   } catch (error) {

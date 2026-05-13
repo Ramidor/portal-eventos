@@ -1,10 +1,5 @@
 import { Link } from "react-router-dom";
-
-const CATEGORY_LABELS = {
-  MUSICA: "🎵 Música", DEPORTE: "⚽ Deporte", ARTE: "🎨 Arte",
-  TECNOLOGIA: "💻 Tecnología", GASTRONOMIA: "🍽️ Gastronomía",
-  EDUCACION: "📚 Educación", NEGOCIOS: "💼 Negocios", OTRO: "📌 Otro",
-};
+import { CATEGORY_LABELS } from "../constants/categories";
 
 export default function EventCard({ event, distance }) {
   const date = new Date(event.date);

@@ -32,8 +32,9 @@ exports.updateMe = async (req, res) => {
       if (!currentPassword) {
         return res.status(400).json({ error: "Debes proporcionar tu contraseña actual para cambiarla" });
       }
-      if (newPassword.length < 6) {
-        return res.status(400).json({ error: "La nueva contraseña debe tener al menos 6 caracteres" });
+      const PASSWORD_REGEX = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()\-_=+{};:,<.>]).{8,}$/;
+      if (!PASSWORD_REGEX.test(newPassword)) {
+        return res.status(400).json({ error: "La nueva contraseña debe tener al menos 8 caracteres, una mayúscula, un número y un símbolo" });
       }
       const user = await prisma.user.findUnique({ where: { id: userId } });
       const valid = await bcrypt.compare(currentPassword, user.password);

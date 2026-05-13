@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const helmet = require("helmet");
 const http = require("http");
 const { Server } = require("socket.io");
 require("dotenv").config();
@@ -15,8 +16,11 @@ const io = new Server(server, {
 });
 
 // ── Middlewares REST ───────────────────────────────────────────────────────────
+app.use(helmet());
 app.use(cors({ origin: process.env.CLIENT_URL }));
-app.use(express.json());
+app.use(express.json({ limit: "10kb" }));
+
+const { authLimiter } = require("./src/middlewares/rateLimiter.middleware");
 
 app.get("/", (req, res) => res.send("API funcionando 🚀"));
 
@@ -26,7 +30,7 @@ const eventRoutes = require("./src/routes/event.routes");
 const userRoutes = require("./src/routes/user.routes");
 const messageRoutes = require("./src/routes/message.routes");
 
-app.use("/auth", authRoutes);
+app.use("/auth", authLimiter, authRoutes);
 app.use("/events", eventRoutes);
 app.use("/users", userRoutes);
 app.use("/events/:id/messages", messageRoutes); // REST: historial paginado

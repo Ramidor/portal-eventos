@@ -4,17 +4,9 @@ import Navbar from "../components/Navbar";
 import EventCard from "../components/EventCard";
 import api from "../services/api";
 
-const CATEGORIES = [
-  { value: "",            label: "Todas las categorías" },
-  { value: "MUSICA",      label: "🎵 Música" },
-  { value: "DEPORTE",     label: "⚽ Deporte" },
-  { value: "ARTE",        label: "🎨 Arte" },
-  { value: "TECNOLOGIA",  label: "💻 Tecnología" },
-  { value: "GASTRONOMIA", label: "🍽️ Gastronomía" },
-  { value: "EDUCACION",   label: "📚 Educación" },
-  { value: "NEGOCIOS",    label: "💼 Negocios" },
-  { value: "OTRO",        label: "📌 Otro" },
-];
+import { CATEGORIES as BASE_CATEGORIES } from "../constants/categories";
+
+const CATEGORIES = [{ value: "", label: "Todas las categorías" }, ...BASE_CATEGORIES];
 
 function getDistance(userCoords, event) {
   if (!userCoords || !event.latitude || !event.longitude) return Infinity;
@@ -50,7 +42,7 @@ export default function EventsPage() {
     setError("");
 
     api.get(`/events?${params.toString()}`)
-      .then(({ data }) => { if (!cancelled) setEvents(data); })
+      .then(({ data }) => { if (!cancelled) setEvents(data.events); })
       .catch(() => { if (!cancelled) setError("Error al cargar los eventos"); })
       .finally(() => { if (!cancelled) setLoading(false); });
 

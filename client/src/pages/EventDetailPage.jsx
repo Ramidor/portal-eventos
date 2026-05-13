@@ -2,24 +2,12 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import L from "leaflet";
+import "../utils/leafletFix";
 import Navbar from "../components/Navbar";
 import EventWall from "../components/EventWall";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
-
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-});
-
-const CATEGORY_LABELS = {
-  MUSICA: "🎵 Música", DEPORTE: "⚽ Deporte", ARTE: "🎨 Arte",
-  TECNOLOGIA: "💻 Tecnología", GASTRONOMIA: "🍽️ Gastronomía",
-  EDUCACION: "📚 Educación", NEGOCIOS: "💼 Negocios", OTRO: "📌 Otro",
-};
+import { CATEGORY_LABELS } from "../constants/categories";
 
 export default function EventDetailPage() {
   const { id } = useParams();
@@ -37,14 +25,19 @@ export default function EventDetailPage() {
   const isCreator = user && event && user.id === event.creatorId;
 
   useEffect(() => {
-    Promise.all([
-      api.get(`/events/${id}`),
-      api.get(`/events/${id}/enrollments`),
-    ])
-      .then(([eventRes, enrollRes]) => {
+    const fetchEvent = api.get(`/events/${id}`);
+    const fetchEnrolled = user
+      ? api.get(`/events/${id}/enrollments/me`)
+      : Promise.resolve({ data: { isEnrolled: false } });
+    const fetchList = user
+      ? api.get(`/events/${id}/enrollments`).catch(() => ({ data: { enrollments: [] } }))
+      : Promise.resolve({ data: { enrollments: [] } });
+
+    Promise.all([fetchEvent, fetchEnrolled, fetchList])
+      .then(([eventRes, meRes, listRes]) => {
         setEvent(eventRes.data);
-        setEnrollments(enrollRes.data.enrollments);
-        if (user) setIsEnrolled(enrollRes.data.enrollments.some((e) => e.userId === user.id));
+        setIsEnrolled(meRes.data.isEnrolled);
+        setEnrollments(listRes.data.enrollments);
       })
       .catch(() => setError("Error al cargar el evento"))
       .finally(() => setLoading(false));
@@ -55,8 +48,11 @@ export default function EventDetailPage() {
     setEnrollLoading(true); setEnrollError("");
     try {
       await api.post(`/events/${id}/enroll`);
-      const { data } = await api.get(`/events/${id}/enrollments`);
-      setEnrollments(data.enrollments); setIsEnrolled(true);
+      setIsEnrolled(true);
+      setEvent((prev) => ({
+        ...prev,
+        _count: { ...prev._count, enrollments: prev._count.enrollments + 1 },
+      }));
     } catch (err) {
       setEnrollError(err.response?.data?.error || "Error al inscribirse");
     } finally { setEnrollLoading(false); }
@@ -66,8 +62,11 @@ export default function EventDetailPage() {
     setEnrollLoading(true); setEnrollError("");
     try {
       await api.delete(`/events/${id}/enroll`);
-      const { data } = await api.get(`/events/${id}/enrollments`);
-      setEnrollments(data.enrollments); setIsEnrolled(false);
+      setIsEnrolled(false);
+      setEvent((prev) => ({
+        ...prev,
+        _count: { ...prev._count, enrollments: prev._count.enrollments - 1 },
+      }));
     } catch (err) {
       setEnrollError(err.response?.data?.error || "Error al cancelar inscripción");
     } finally { setEnrollLoading(false); }
@@ -100,6 +99,10 @@ export default function EventDetailPage() {
   const date = new Date(event.date);
   const formattedDate = date.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
   const formattedTime = date.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
+
+  const enrolledCount = event._count?.enrollments ?? 0;
+  const spotsLeft     = event.maxAttendees !== null ? event.maxAttendees - enrolledCount : null;
+  const isFull        = spotsLeft !== null && spotsLeft <= 0;
 
   return (
     <div className="min-h-screen bg-stone-950">
@@ -187,6 +190,31 @@ export default function EventDetailPage() {
           {/* Columna lateral */}
           <div className="space-y-4">
             <div className="bg-stone-900 border border-stone-800 rounded-xl p-6 space-y-4">
+
+              {/* Aforo */}
+              {event.maxAttendees !== null && (
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-stone-500 font-mono text-xs">Aforo</span>
+                    <span className="text-stone-400 font-mono text-xs">
+                      {enrolledCount} / {event.maxAttendees}
+                    </span>
+                  </div>
+                  <div className="w-full bg-stone-800 rounded-full h-1.5">
+                    <div
+                      className={`h-1.5 rounded-full transition-all ${isFull ? "bg-red-500" : "bg-amber-400"}`}
+                      style={{ width: `${Math.min(100, (enrolledCount / event.maxAttendees) * 100)}%` }}
+                    />
+                  </div>
+                  {!isFull && (
+                    <p className="text-stone-600 font-mono text-xs mt-1">{spotsLeft} plazas libres</p>
+                  )}
+                  {isFull && (
+                    <p className="text-red-400 font-mono text-xs mt-1">Aforo completo</p>
+                  )}
+                </div>
+              )}
+
               {!isCreator && (
                 <>
                   {isEnrolled ? (
@@ -195,9 +223,9 @@ export default function EventDetailPage() {
                       {enrollLoading ? "..." : "Cancelar inscripción"}
                     </button>
                   ) : (
-                    <button onClick={handleEnroll} disabled={enrollLoading}
+                    <button onClick={handleEnroll} disabled={enrollLoading || isFull}
                       className="w-full bg-amber-400 hover:bg-amber-300 disabled:bg-stone-700 disabled:text-stone-500 text-stone-950 font-semibold py-3 rounded-lg text-sm transition-colors cursor-pointer">
-                      {enrollLoading ? "..." : "Inscribirse"}
+                      {enrollLoading ? "..." : isFull ? "Aforo completo" : "Inscribirse"}
                     </button>
                   )}
                   {enrollError && <p className="text-red-400 text-xs font-mono">{enrollError}</p>}

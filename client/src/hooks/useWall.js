@@ -12,7 +12,6 @@ export default function useWall(eventId, token) {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    console.log("Token al conectar WS:", token);
     if (!token || !eventId) return;
 
     const socket = io(import.meta.env.VITE_API_URL || "http://localhost:3000", {

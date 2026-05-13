@@ -139,7 +139,7 @@ export default function ProfilePage() {
                       <div>
                         <label className="block text-stone-600 text-xs font-mono mb-1">Nueva contraseña</label>
                         <input type="password" name="newPassword" value={form.newPassword} onChange={handleChange}
-                          placeholder="Mínimo 6 caracteres"
+                          placeholder="Mínimo 8 caracteres"
                           className="w-full bg-stone-800 border border-stone-700 text-stone-100 rounded-lg px-3 py-2 text-sm placeholder-stone-600 focus:outline-none focus:border-amber-400 transition-colors" />
                       </div>
                     </div>

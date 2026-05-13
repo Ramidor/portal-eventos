@@ -1,26 +1,8 @@
 import { useState, useRef } from "react";
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import L from "leaflet";
-
-// Fix icono por defecto de Leaflet con Vite
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-});
-
-const CATEGORIES = [
-  { value: "MUSICA",      label: "🎵 Música" },
-  { value: "DEPORTE",     label: "⚽ Deporte" },
-  { value: "ARTE",        label: "🎨 Arte" },
-  { value: "TECNOLOGIA",  label: "💻 Tecnología" },
-  { value: "GASTRONOMIA", label: "🍽️ Gastronomía" },
-  { value: "EDUCACION",   label: "📚 Educación" },
-  { value: "NEGOCIOS",    label: "💼 Negocios" },
-  { value: "OTRO",        label: "📌 Otro" },
-];
+import { CATEGORIES } from "../constants/categories";
+import "../utils/leafletFix";
 
 function toDatetimeLocal(isoString) {
   if (!isoString) return "";
@@ -47,8 +29,9 @@ export default function EventForm({ initialData = {}, onSubmit, loading, error, 
     location:    initialData.location    || "",
     latitude:    initialData.latitude    || null,
     longitude:   initialData.longitude   || null,
-    image:       initialData.image       || "",
-    category:    initialData.category    || "OTRO",
+    image:        initialData.image        || "",
+    category:     initialData.category     || "OTRO",
+    maxAttendees: initialData.maxAttendees || "",
   });
 
   const [searchQuery, setSearchQuery]   = useState(initialData.location || "");
@@ -203,19 +186,11 @@ export default function EventForm({ initialData = {}, onSubmit, loading, error, 
         )}
 
         {/* Campo de texto editable con el nombre del lugar */}
-        {form.location && (
-          <input
-            type="text" name="location" value={form.location} onChange={handleChange} required
-            placeholder="Nombre del lugar"
-            className="w-full bg-stone-900 border border-stone-700 text-stone-100 rounded-lg px-4 py-3 text-sm placeholder-stone-600 focus:outline-none focus:border-amber-400 transition-colors mb-3"
-          />
-        )}
-        {!form.location && (
-          <input type="text" name="location" value={form.location} onChange={handleChange}
-            required placeholder="Nombre del lugar (busca arriba o haz clic en el mapa)"
-            className="w-full bg-stone-900 border border-stone-700 text-stone-100 rounded-lg px-4 py-3 text-sm placeholder-stone-600 focus:outline-none focus:border-amber-400 transition-colors mb-3"
-          />
-        )}
+        <input
+          type="text" name="location" value={form.location} onChange={handleChange} required
+          placeholder={form.location ? "Nombre del lugar" : "Nombre del lugar (busca arriba o haz clic en el mapa)"}
+          className="w-full bg-stone-900 border border-stone-700 text-stone-100 rounded-lg px-4 py-3 text-sm placeholder-stone-600 focus:outline-none focus:border-amber-400 transition-colors mb-3"
+        />
 
         {/* Mapa */}
         <div className="rounded-xl overflow-hidden border border-stone-700 h-64">
@@ -254,6 +229,18 @@ export default function EventForm({ initialData = {}, onSubmit, loading, error, 
             onError={(e) => { e.target.style.display = "none"; }}
           />
         )}
+      </div>
+
+      {/* Aforo máximo */}
+      <div>
+        <label className="block text-stone-400 text-xs font-mono tracking-widest uppercase mb-2">
+          Aforo máximo <span className="text-stone-600 normal-case font-sans tracking-normal">— opcional</span>
+        </label>
+        <input
+          type="number" name="maxAttendees" value={form.maxAttendees} onChange={handleChange}
+          min="1" placeholder="Sin límite"
+          className="w-full bg-stone-900 border border-stone-700 text-stone-100 rounded-lg px-4 py-3 text-sm placeholder-stone-600 focus:outline-none focus:border-amber-400 transition-colors"
+        />
       </div>
 
       {error && (

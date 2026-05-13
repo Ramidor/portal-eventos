@@ -10,24 +10,22 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-/**
- * Envía el email de verificación al nuevo usuario
- */
-exports.sendVerificationEmail = async (to, code) => {
+exports.sendVerificationCode = async (to, code) => {
   await transporter.sendMail({
-    from: `"Portal de Eventos" <${process.env.SMTP_USER}>`,
+    from:    `"Portal de Eventos" <${process.env.SMTP_USER}>`,
     to,
     subject: "Tu código de verificación",
     html: `
-      <div style="font-family:sans-serif;max-width:480px;margin:auto;text-align:center;">
-        <h2>Bienvenido al Portal de Eventos</h2>
-        <p>Introduce el siguiente código numérico para verificar tu cuenta:</p>
-        
-        <div style="font-size:32px;font-weight:bold;letter-spacing:8px;color:#fbbf24;background:#1c1917;padding:16px;border-radius:8px;display:inline-block;margin:16px 0;">
+      <div style="font-family:sans-serif;max-width:480px;margin:auto">
+        <h2>Verifica tu cuenta</h2>
+        <p>Introduce este código en la aplicación para activar tu cuenta:</p>
+        <div style="font-size:40px;font-weight:bold;letter-spacing:12px;
+                    background:#1c1917;color:#fbbf24;padding:24px;
+                    border-radius:12px;text-align:center;margin:24px 0">
           ${code}
         </div>
-        
-        <p style="color:#888;font-size:12px;margin-top:24px">
+        <p style="color:#888;font-size:12px">
+          El código expira en <strong>15 minutos</strong>.<br>
           Si no creaste esta cuenta, ignora este mensaje.
         </p>
       </div>
