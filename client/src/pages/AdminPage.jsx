@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+/* eslint-disable react-hooks/set-state-in-effect */
+import { useState, useEffect, useCallback } from "react";
 import Navbar from "../components/Navbar";
 import { useAuth } from "../context/AuthContext";
 import { CATEGORY_LABELS } from "../constants/categories";
@@ -13,11 +14,11 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError]   = useState("");
 
-  const fetchUsers = () =>
-    api.get("/users/admin/users").then(({ data }) => setUsers(data.users));
+  const fetchUsers = useCallback(() =>
+    api.get("/users/admin/users").then(({ data }) => setUsers(data.users)), []);
 
-  const fetchEvents = () =>
-    api.get("/events/admin/all").then(({ data }) => setEvents(data.events));
+  const fetchEvents = useCallback(() =>
+    api.get("/events/admin/all").then(({ data }) => setEvents(data.events)), []);
 
   useEffect(() => {
     setLoading(true);
@@ -25,7 +26,7 @@ export default function AdminPage() {
     Promise.all([fetchUsers(), fetchEvents()])
       .catch(() => setError("Error al cargar datos"))
       .finally(() => setLoading(false));
-  }, []);
+  }, [fetchUsers, fetchEvents]);
 
   const handleRoleChange = async (targetId, currentRole) => {
     const newRole = currentRole === "ADMIN" ? "USER" : "ADMIN";
@@ -43,6 +44,7 @@ export default function AdminPage() {
     try {
       await api.delete(`/users/admin/users/${targetId}`);
       setUsers((prev) => prev.filter((u) => u.id !== targetId));
+      await fetchEvents(); // actualiza el nombre del creador en los eventos organizados por ese usuario
     } catch (err) {
       alert(err.response?.data?.error || "Error al eliminar usuario");
     }
@@ -53,6 +55,7 @@ export default function AdminPage() {
     try {
       await api.delete(`/events/${eventId}`);
       setEvents((prev) => prev.filter((e) => e.id !== eventId));
+      await fetchUsers(); // actualiza el contador de eventos organizados por usuario
     } catch (err) {
       alert(err.response?.data?.error || "Error al eliminar evento");
     }

@@ -34,12 +34,18 @@ export default function ProfilePage() {
   const [saving, setSaving]       = useState(false);
   const [saveError, setSaveError] = useState("");
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [ratingSummary, setRatingSummary] = useState(null);
 
   useEffect(() => {
-    Promise.all([api.get("/users/me/events"), api.get("/users/me/enrollments")])
-      .then(([eventsRes, enrollRes]) => {
+    Promise.all([
+      api.get("/users/me/events"),
+      api.get("/users/me/enrollments"),
+      api.get("/users/me/rating-summary"),
+    ])
+      .then(([eventsRes, enrollRes, ratingRes]) => {
         setMyEvents(eventsRes.data.events);
         setMyEnrollments(enrollRes.data.enrollments);
+        setRatingSummary(ratingRes.data);
       })
       .finally(() => setLoading(false));
   }, []);
@@ -105,12 +111,16 @@ export default function ProfilePage() {
                     <p className="text-stone-600 text-xs font-mono mb-1">Email</p>
                     <p className="text-stone-200 text-sm">{user?.email}</p>
                   </div>
-                  <div>
-                    <p className="text-stone-600 text-xs font-mono mb-1">Rol</p>
-                    <span className={`text-xs font-mono px-2 py-1 rounded-full ${
-                      user?.role === "ADMIN" ? "bg-amber-400/10 text-amber-400" : "bg-stone-800 text-stone-400"
-                    }`}>{user?.role}</span>
-                  </div>
+                  {ratingSummary?.total > 0 && (
+                    <div>
+                      <p className="text-stone-600 text-xs font-mono mb-1">Valoración como organizador</p>
+                      <div className="flex items-center gap-2">
+                        <span className="text-amber-400 text-base">{"★".repeat(Math.round(ratingSummary.average))}{"☆".repeat(5 - Math.round(ratingSummary.average))}</span>
+                        <span className="text-stone-300 font-mono text-sm">{ratingSummary.average.toFixed(1)}</span>
+                        <span className="text-stone-600 text-xs">({ratingSummary.total})</span>
+                      </div>
+                    </div>
+                  )}
                   {saveSuccess && <p className="text-green-400 text-xs font-mono">Perfil actualizado ✓</p>}
                 </div>
               ) : (

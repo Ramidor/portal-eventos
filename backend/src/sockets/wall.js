@@ -44,9 +44,9 @@ module.exports = (io) => {
     // ── joinEvent ────────────────────────────────────────────────────────────
     socket.on("joinEvent", async ({ eventId }) => {
       try {
-        eventId = Number(eventId);
+        const eventIdNum = Number(eventId);
 
-        const event = await prisma.event.findUnique({ where: { id: eventId } });
+        const event = await prisma.event.findUnique({ where: { id: eventIdNum } });
         if (!event) {
           return socket.emit("wallError", { error: "Evento no encontrado" });
         }
@@ -57,7 +57,7 @@ module.exports = (io) => {
         // Solo el creador o inscritos pueden entrar al muro
         if (!isCreator) {
           const enrollment = await prisma.enrollment.findUnique({
-            where: { userId_eventId: { userId, eventId } },
+            where: { userId_eventId: { userId, eventId: eventIdNum } },
           });
 
           if (!enrollment) {
@@ -67,12 +67,12 @@ module.exports = (io) => {
           }
         }
 
-        const room = `event:${eventId}`;
+        const room = `event:${eventIdNum}`;
         socket.join(room);
 
         // Enviar historial de mensajes al cliente que acaba de entrar
         const history = await prisma.message.findMany({
-          where: { eventId },
+          where: { eventId: eventIdNum },
           include: { user: { select: { id: true, name: true } } },
           orderBy: { createdAt: "asc" },
           take: 50, // últimos 50 mensajes
@@ -88,7 +88,7 @@ module.exports = (io) => {
     // ── sendMessage ──────────────────────────────────────────────────────────
     socket.on("sendMessage", async ({ eventId, content }) => {
       try {
-        eventId = Number(eventId);
+        const eventIdNum = Number(eventId);
         const userId = socket.user.id;
 
         if (!content || !content.trim()) {
@@ -104,13 +104,32 @@ module.exports = (io) => {
         }
 
         // Verificar que el socket está en la sala (ya pasó el guard de joinEvent)
-        const room = `event:${eventId}`;
+        const room = `event:${eventIdNum}`;
         if (!socket.rooms.has(room)) {
           return socket.emit("wallError", { error: "No estás en este muro" });
         }
 
+        // Revalidar permiso: el usuario puede haberse desinscrito después de unirse.
+        const event = await prisma.event.findUnique({ where: { id: eventIdNum } });
+        if (!event) {
+          socket.leave(room);
+          return socket.emit("wallError", { error: "Evento no encontrado" });
+        }
+        const isCreator = event.creatorId === userId;
+        if (!isCreator) {
+          const enrollment = await prisma.enrollment.findUnique({
+            where: { userId_eventId: { userId, eventId: eventIdNum } },
+          });
+          if (!enrollment) {
+            socket.leave(room);
+            return socket.emit("wallError", {
+              error: "Ya no estás inscrito en este evento",
+            });
+          }
+        }
+
         const message = await prisma.message.create({
-          data: { content: content.trim(), userId, eventId },
+          data: { content: content.trim(), userId, eventId: eventIdNum },
           include: { user: { select: { id: true, name: true } } },
         });
 

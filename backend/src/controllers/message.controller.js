@@ -1,14 +1,16 @@
-const prisma = require("../config/prisma");
+const prisma  = require("../config/prisma");
+const parseId = require("../utils/parseId");
 
 exports.getMessages = async (req, res) => {
   try {
-    const eventId = Number(req.params.id);
+    const eventId = parseId(req.params.id);
+    if (!eventId) return res.status(400).json({ error: "ID no válido" });
     const userId = req.user.id;
     const page = Math.max(1, Number(req.query.page) || 1);
     const limit = Math.min(100, Number(req.query.limit) || 50);
     const skip = (page - 1) * limit;
 
-    const event = await prisma.event.findUnique({ where: { id: eventId } });
+    const event = await prisma.event.findUnique({ where: { id: eventId  } });
     if (!event) return res.status(404).json({ error: "Evento no encontrado" });
 
     const isCreator = event.creatorId === userId;

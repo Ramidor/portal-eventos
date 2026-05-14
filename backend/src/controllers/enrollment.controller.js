@@ -1,35 +1,42 @@
-const prisma = require("../config/prisma");
+const prisma   = require("../config/prisma");
+const parseId  = require("../utils/parseId");
 
 // ─────────────────────────────────────────────
 // POST /events/:id/enroll  →  Privado
 // ─────────────────────────────────────────────
 exports.enroll = async (req, res) => {
   try {
-    const eventId = Number(req.params.id);
+    const eventId = parseId(req.params.id);
+    if (!eventId) return res.status(400).json({ error: "ID no válido" });
     const userId  = req.user.id;
 
-    const event = await prisma.event.findUnique({
-      where: { id: eventId },
-      include: { _count: { select: { enrollments: true } } },
-    });
-
+    const event = await prisma.event.findUnique({ where: { id: eventId } });
     if (!event) return res.status(404).json({ error: "Evento no encontrado" });
 
     if (event.creatorId === userId) {
       return res.status(400).json({ error: "No puedes inscribirte en tu propio evento" });
     }
 
-    // Comprobar límite de asistentes
-    if (event.maxAttendees !== null && event._count.enrollments >= event.maxAttendees) {
-      return res.status(400).json({ error: "El evento ha alcanzado el límite de asistentes" });
-    }
-
-    const enrollment = await prisma.enrollment.create({
-      data: { userId, eventId },
-    });
+    // Comprobamos aforo y creamos la inscripción dentro de una transacción
+    // serializable para evitar la condición de carrera (dos peticiones simultáneas
+    // saltándose maxAttendees).
+    const enrollment = await prisma.$transaction(async (tx) => {
+      if (event.maxAttendees !== null) {
+        const count = await tx.enrollment.count({ where: { eventId } });
+        if (count >= event.maxAttendees) {
+          const err = new Error("FULL");
+          err.code = "FULL";
+          throw err;
+        }
+      }
+      return tx.enrollment.create({ data: { userId, eventId } });
+    }, { isolationLevel: "Serializable" });
 
     res.status(201).json({ message: "Inscripción realizada con éxito", enrollment });
   } catch (error) {
+    if (error.code === "FULL") {
+      return res.status(400).json({ error: "El evento ha alcanzado el límite de asistentes" });
+    }
     if (error.code === "P2002") {
       return res.status(409).json({ error: "Ya estás inscrito en este evento" });
     }
@@ -43,7 +50,8 @@ exports.enroll = async (req, res) => {
 // ─────────────────────────────────────────────
 exports.unenroll = async (req, res) => {
   try {
-    const eventId = Number(req.params.id);
+    const eventId = parseId(req.params.id);
+    if (!eventId) return res.status(400).json({ error: "ID no válido" });
     const userId  = req.user.id;
 
     const enrollment = await prisma.enrollment.findUnique({
@@ -68,7 +76,8 @@ exports.unenroll = async (req, res) => {
 // ─────────────────────────────────────────────
 exports.getEnrollments = async (req, res) => {
   try {
-    const eventId = Number(req.params.id);
+    const eventId = parseId(req.params.id);
+    if (!eventId) return res.status(400).json({ error: "ID no válido" });
     const userId  = req.user.id;
 
     const event = await prisma.event.findUnique({ where: { id: eventId } });
@@ -97,7 +106,8 @@ exports.getEnrollments = async (req, res) => {
 // ─────────────────────────────────────────────
 exports.getMyEnrollmentStatus = async (req, res) => {
   try {
-    const eventId = Number(req.params.id);
+    const eventId = parseId(req.params.id);
+    if (!eventId) return res.status(400).json({ error: "ID no válido" });
     const userId  = req.user.id;
     const enrollment = await prisma.enrollment.findUnique({
       where: { userId_eventId: { userId, eventId } },

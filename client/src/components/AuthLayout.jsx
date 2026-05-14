@@ -1,9 +1,16 @@
+import { Link } from "react-router-dom";
+
 export default function AuthLayout({ headline, subtitle, children }) {
   return (
     <div className="min-h-screen bg-stone-950 flex">
       <div className="hidden lg:flex lg:w-1/2 flex-col justify-between p-16 bg-stone-900 border-r border-stone-800">
         <div>
-          <span className="text-amber-400 font-mono text-xs tracking-[0.3em] uppercase">Portal de Eventos</span>
+          <Link
+          to="/events"
+          className="text-amber-400 font-mono text-sm tracking-[0.3em] uppercase hover:text-amber-300 transition-colors"
+        >
+          Portal de Eventos
+        </Link>
         </div>
         <div>
           <h1 className="text-6xl font-serif text-stone-100 leading-tight mb-6">{headline}</h1>

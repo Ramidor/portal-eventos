@@ -1,5 +1,7 @@
-const prisma = require("../config/prisma");
-const bcrypt = require("bcrypt");
+const prisma  = require("../config/prisma");
+const bcrypt  = require("bcrypt");
+const parseId = require("../utils/parseId");
+const { sendAccountDeleted } = require("../services/email.service");
 
 exports.getMe = async (req, res) => {
   try {
@@ -94,12 +96,19 @@ exports.getAllUsers = async (req, res) => {
 
 exports.deleteUser = async (req, res) => {
   try {
-    const targetId = Number(req.params.id);
+    const targetId = parseId(req.params.id);
+    if (!targetId) return res.status(400).json({ error: "ID no válido" });
     if (targetId === req.user.id) return res.status(400).json({ error: "No puedes eliminarte a ti mismo" });
     const user = await prisma.user.findUnique({ where: { id: targetId } });
     if (!user) return res.status(404).json({ error: "Usuario no encontrado" });
+    // Los eventos del usuario no tienen onDelete:Cascade en el schema, hay que borrarlos
+    // antes. Al borrar cada evento, sus inscripciones y mensajes sí tienen Cascade.
+    await prisma.event.deleteMany({ where: { creatorId: targetId } });
     await prisma.user.delete({ where: { id: targetId } });
     res.json({ message: "Usuario eliminado correctamente" });
+
+    // Notificar al usuario eliminado (fire-and-forget)
+    sendAccountDeleted(user.email, user.name).catch(console.error);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Error al eliminar el usuario" });
@@ -108,7 +117,8 @@ exports.deleteUser = async (req, res) => {
 
 exports.updateUserRole = async (req, res) => {
   try {
-    const targetId = Number(req.params.id);
+    const targetId = parseId(req.params.id);
+    if (!targetId) return res.status(400).json({ error: "ID no válido" });
     const { role } = req.body;
     if (!["USER", "ADMIN"].includes(role)) return res.status(400).json({ error: "Rol no válido" });
     if (targetId === req.user.id) return res.status(400).json({ error: "No puedes cambiar tu propio rol" });

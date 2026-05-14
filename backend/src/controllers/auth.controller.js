@@ -1,14 +1,23 @@
+const { randomInt, randomBytes } = require("crypto");
 const prisma  = require("../config/prisma");
 const bcrypt  = require("bcrypt");
 const jwt     = require("jsonwebtoken");
-const { sendVerificationCode } = require("../services/email.service");
+const { sendVerificationCode, sendPasswordReset } = require("../services/email.service");
 
 // Regex de validación
 const EMAIL_REGEX    = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const PASSWORD_REGEX = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()\-_=+{};:,<.>])(.{8,})$/;
 
 function generateOTP() {
-  return String(Math.floor(100000 + Math.random() * 900000)); // 6 dígitos
+  return String(randomInt(100000, 1000000)); // 6 dígitos, criptográficamente seguro
+}
+
+function signJwt(user) {
+  return jwt.sign(
+    { id: user.id, email: user.email, role: user.role },
+    process.env.JWT_SECRET,
+    { expiresIn: "1h" }
+  );
 }
 
 // ─────────────────────────────────────────────
@@ -84,12 +93,12 @@ exports.verifyEmail = async (req, res) => {
     if (!user) return res.status(400).json({ error: "Usuario no encontrado" });
     if (user.emailVerified) return res.status(400).json({ error: "El email ya está verificado" });
 
-    if (user.verificationCode !== code) {
-      return res.status(400).json({ error: "Código incorrecto" });
-    }
-
     if (new Date() > user.verificationCodeExpiry) {
       return res.status(400).json({ error: "El código ha expirado. Solicita uno nuevo.", code: "CODE_EXPIRED" });
+    }
+
+    if (user.verificationCode !== code) {
+      return res.status(400).json({ error: "Código incorrecto" });
     }
 
     await prisma.user.update({
@@ -97,15 +106,9 @@ exports.verifyEmail = async (req, res) => {
       data: { emailVerified: true, verificationCode: null, verificationCodeExpiry: null },
     });
 
-    const token = jwt.sign(
-      { id: user.id, email: user.email, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: "1h" }
-    );
-
     res.json({
       message: "Email verificado correctamente",
-      token,
+      token: signJwt(user),
       user: { id: user.id, name: user.name, email: user.email, role: user.role },
     });
   } catch (error) {
@@ -170,19 +173,77 @@ exports.login = async (req, res) => {
       });
     }
 
-    const token = jwt.sign(
-      { id: user.id, email: user.email, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: "1h" }
-    );
-
     res.json({
       message: "Login exitoso",
-      token,
+      token: signJwt(user),
       user: { id: user.id, name: user.name, email: user.email, role: user.role },
     });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Error al iniciar sesión" });
+  }
+};
+
+// ─────────────────────────────────────────────
+// POST /auth/forgot-password
+// ─────────────────────────────────────────────
+exports.forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: "Email requerido" });
+
+    const user = await prisma.user.findUnique({ where: { email } });
+
+    // Respuesta genérica para no revelar si el email existe
+    if (!user || !user.emailVerified) {
+      return res.json({ message: "Si el email existe y está verificado, recibirás un enlace." });
+    }
+
+    const token  = randomBytes(32).toString("hex");
+    const expiry = new Date(Date.now() + 60 * 60 * 1000); // 1 hora
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { resetToken: token, resetTokenExpiry: expiry },
+    });
+
+    const resetUrl = `${process.env.CLIENT_URL}/reset-password?token=${token}`;
+    await sendPasswordReset(email, resetUrl);
+
+    res.json({ message: "Si el email existe y está verificado, recibirás un enlace." });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error al procesar la solicitud" });
+  }
+};
+
+// ─────────────────────────────────────────────
+// POST /auth/reset-password
+// ─────────────────────────────────────────────
+exports.resetPassword = async (req, res) => {
+  try {
+    const { token, password } = req.body;
+    if (!token || !password) return res.status(400).json({ error: "Token y contraseña son obligatorios" });
+
+    if (!PASSWORD_REGEX.test(password)) {
+      return res.status(400).json({ error: "La contraseña no cumple los requisitos de seguridad" });
+    }
+
+    const user = await prisma.user.findFirst({ where: { resetToken: token } });
+    if (!user) return res.status(400).json({ error: "Token no válido" });
+    if (new Date() > user.resetTokenExpiry) {
+      return res.status(400).json({ error: "El enlace ha expirado. Solicita uno nuevo.", code: "TOKEN_EXPIRED" });
+    }
+
+    const hashed = await bcrypt.hash(password, 10);
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { password: hashed, resetToken: null, resetTokenExpiry: null },
+    });
+
+    res.json({ message: "Contraseña actualizada correctamente. Ya puedes iniciar sesión." });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error al restablecer la contraseña" });
   }
 };

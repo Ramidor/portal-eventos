@@ -7,9 +7,10 @@ import api from "../services/api";
 import { CATEGORIES as BASE_CATEGORIES } from "../constants/categories";
 
 const CATEGORIES = [{ value: "", label: "Todas las categorías" }, ...BASE_CATEGORIES];
+const PAGE_SIZE  = 20;
 
 function getDistance(userCoords, event) {
-  if (!userCoords || !event.latitude || !event.longitude) return Infinity;
+  if (!userCoords || event.latitude == null || event.longitude == null) return Infinity;
   const R = 6371;
   const dLat = ((event.latitude  - userCoords.lat) * Math.PI) / 180;
   const dLng = ((event.longitude - userCoords.lng) * Math.PI) / 180;
@@ -23,53 +24,73 @@ function getDistance(userCoords, event) {
 
 export default function EventsPage() {
   const [events, setEvents]             = useState([]);
+  const [total, setTotal]               = useState(0);
+  const [page, setPage]                 = useState(1);
   const [loading, setLoading]           = useState(true);
   const [error, setError]               = useState("");
   const [search, setSearch]             = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [category, setCategory]         = useState("");
   const [location, setLocation]         = useState("");
   const [userCoords, setUserCoords]     = useState(null);
   const [sortByDistance, setSortByDistance] = useState(false);
 
+  // Debounce de la búsqueda; resetea la página en el mismo batch
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setDebouncedSearch(search);
+      setPage(1);
+    }, 300);
+    return () => clearTimeout(t);
+  }, [search]);
+
   useEffect(() => {
     let cancelled = false;
 
     const params = new URLSearchParams();
-    if (category) params.append("category", category);
-    if (location) params.append("location", location);
+    if (category)        params.append("category", category);
+    if (location)        params.append("location", location);
+    if (debouncedSearch) params.append("search",   debouncedSearch);
+    params.append("page",  String(page));
+    params.append("limit", String(PAGE_SIZE));
 
     setLoading(true);
     setError("");
 
     api.get(`/events?${params.toString()}`)
-      .then(({ data }) => { if (!cancelled) setEvents(data.events); })
+      .then(({ data }) => {
+        if (cancelled) return;
+        setEvents(data.events);
+        setTotal(data.total);
+      })
       .catch(() => { if (!cancelled) setError("Error al cargar los eventos"); })
       .finally(() => { if (!cancelled) setLoading(false); });
 
     return () => { cancelled = true; };
-  }, [category, location]);
+  }, [category, location, debouncedSearch, page]);
 
   const handleLocationFilter = () => {
-    if (!navigator.geolocation) return;
+    if (!navigator.geolocation) {
+      setError("La geolocalización no está disponible en este navegador");
+      return;
+    }
     navigator.geolocation.getCurrentPosition(
       (pos) => {
+        setError("");
         setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
         setSortByDistance(true);
       },
-      () => alert("No se pudo obtener tu ubicación")
+      () => setError("No se pudo obtener tu ubicación")
     );
   };
 
-  let filtered = events.filter((e) =>
-    e.title.toLowerCase().includes(search.toLowerCase()) ||
-    e.location.toLowerCase().includes(search.toLowerCase())
-  );
+  // El backend ya filtra por título/ubicación con ?search. El sort por distancia
+  // se aplica sobre la página actual.
+  const displayed = sortByDistance && userCoords
+    ? [...events].sort((a, b) => getDistance(userCoords, a) - getDistance(userCoords, b))
+    : events;
 
-  if (sortByDistance && userCoords) {
-    filtered = [...filtered].sort(
-      (a, b) => getDistance(userCoords, a) - getDistance(userCoords, b)
-    );
-  }
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
     <div className="min-h-screen bg-stone-950">
@@ -91,7 +112,7 @@ export default function EventsPage() {
             className="flex-1 min-w-[200px] bg-stone-900 border border-stone-700 text-stone-100 rounded-lg px-4 py-3 text-sm placeholder-stone-600 focus:outline-none focus:border-amber-400 transition-colors"
           />
           <select
-            value={category} onChange={(e) => setCategory(e.target.value)}
+            value={category} onChange={(e) => { setCategory(e.target.value); setPage(1); }}
             className="bg-stone-900 border border-stone-700 text-stone-100 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-amber-400 transition-colors"
           >
             {CATEGORIES.map((c) => (
@@ -99,7 +120,7 @@ export default function EventsPage() {
             ))}
           </select>
           <input
-            type="text" value={location} onChange={(e) => setLocation(e.target.value)}
+            type="text" value={location} onChange={(e) => { setLocation(e.target.value); setPage(1); }}
             placeholder="Filtrar por ciudad..."
             className="bg-stone-900 border border-stone-700 text-stone-100 rounded-lg px-4 py-3 text-sm placeholder-stone-600 focus:outline-none focus:border-amber-400 transition-colors w-48"
           />
@@ -125,20 +146,44 @@ export default function EventsPage() {
             {error}
           </p>
         )}
-        {!loading && !error && filtered.length === 0 && (
+        {!loading && !error && displayed.length === 0 && (
           <div className="text-center py-20">
             <p className="text-stone-600 font-mono text-sm">No hay eventos que coincidan con los filtros.</p>
           </div>
         )}
-        {!loading && !error && filtered.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {filtered.map((event) => (
-              <EventCard
-                key={event.id} event={event}
-                distance={sortByDistance ? getDistance(userCoords, event) : null}
-              />
-            ))}
-          </div>
+        {!loading && !error && displayed.length > 0 && (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {displayed.map((event) => (
+                <EventCard
+                  key={event.id} event={event}
+                  distance={sortByDistance ? getDistance(userCoords, event) : null}
+                />
+              ))}
+            </div>
+
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between mt-10">
+                <button
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page <= 1}
+                  className="font-mono text-xs px-4 py-2 rounded-lg border border-stone-700 text-stone-400 hover:border-amber-400 hover:text-amber-400 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  ← Anterior
+                </button>
+                <span className="text-stone-500 font-mono text-xs">
+                  Página {page} de {totalPages} · {total} eventos
+                </span>
+                <button
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page >= totalPages}
+                  className="font-mono text-xs px-4 py-2 rounded-lg border border-stone-700 text-stone-400 hover:border-amber-400 hover:text-amber-400 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  Siguiente →
+                </button>
+              </div>
+            )}
+          </>
         )}
       </main>
     </div>

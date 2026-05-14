@@ -2,14 +2,16 @@ const express = require("express");
 const router = express.Router();
 const userController = require("../controllers/user.controller");
 const enrollmentController = require("../controllers/enrollment.controller");
+const ratingController = require("../controllers/rating.controller");
 const auth = require("../middlewares/auth.middleware");
 const requireAdmin = require("../middlewares/admin.middleware");
 
 // ── Perfil propio ─────────────────────────────
 router.get("/me", auth, userController.getMe);
 router.put("/me", auth, userController.updateMe);
-router.get("/me/events", auth, userController.getMyEvents);
-router.get("/me/enrollments", auth, enrollmentController.getMyEnrollments);
+router.get("/me/events",         auth, userController.getMyEvents);
+router.get("/me/enrollments",    auth, enrollmentController.getMyEnrollments);
+router.get("/me/rating-summary", auth, ratingController.getMyRatingSummary);
 
 // ── Rutas ADMIN ───────────────────────────────
 router.get("/admin/users", auth, requireAdmin, userController.getAllUsers);

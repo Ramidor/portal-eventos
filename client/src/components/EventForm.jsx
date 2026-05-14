@@ -95,13 +95,19 @@ export default function EventForm({ initialData = {}, onSubmit, loading, error, 
       .catch(() => {});
   };
 
-  const minDate = new Date();
-  minDate.setMinutes(minDate.getMinutes() + 30);
-  const minDateStr = toDatetimeLocal(minDate.toISOString());
+  const minDateStr = (() => {
+    const d = new Date();
+    d.setMinutes(d.getMinutes() + 30);
+    const pad = (n) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  })();
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit(form);
+    onSubmit({
+      ...form,
+      maxAttendees: form.maxAttendees !== "" ? Number(form.maxAttendees) : null,
+    });
   };
 
   return (

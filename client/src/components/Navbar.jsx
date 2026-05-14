@@ -17,7 +17,7 @@ export default function Navbar() {
         {/* Logo */}
         <Link
           to="/events"
-          className="text-amber-400 font-mono text-xs tracking-[0.3em] uppercase hover:text-amber-300 transition-colors"
+          className="text-amber-400 font-mono text-sm tracking-[0.3em] uppercase hover:text-amber-300 transition-colors"
         >
           Portal de Eventos
         </Link>
@@ -28,7 +28,7 @@ export default function Navbar() {
             <>
               <Link
                 to="/events/new"
-                className="bg-amber-400 hover:bg-amber-300 text-stone-950 font-semibold text-xs px-4 py-2 rounded-lg transition-colors"
+                className="bg-amber-400 hover:bg-amber-300 text-stone-950 font-semibold text-sm px-4 py-2 rounded-lg transition-colors"
               >
                 + Crear evento
               </Link>
@@ -48,7 +48,7 @@ export default function Navbar() {
               )}
               <button
                 onClick={handleLogout}
-                className="text-stone-600 hover:text-red-400 font-mono text-xs transition-colors cursor-pointer"
+                className="text-stone-600 hover:text-red-400 font-mono text-sm transition-colors cursor-pointer"
               >
                 Salir
               </button>
@@ -63,7 +63,7 @@ export default function Navbar() {
               </Link>
               <Link
                 to="/register"
-                className="bg-amber-400 hover:bg-amber-300 text-stone-950 font-semibold text-xs px-4 py-2 rounded-lg transition-colors"
+                className="bg-amber-400 hover:bg-amber-300 text-stone-950 font-semibold text-sm px-4 py-2 rounded-lg transition-colors"
               >
                 Registrarse
               </Link>

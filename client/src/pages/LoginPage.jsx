@@ -76,6 +76,12 @@ export default function LoginPage() {
             className="w-full bg-amber-400 hover:bg-amber-300 disabled:bg-stone-700 disabled:text-stone-500 text-stone-950 font-semibold py-3 rounded-lg text-sm transition-colors duration-200 cursor-pointer">
             {loading ? "Entrando..." : "Entrar"}
           </button>
+
+          <p className="text-center">
+            <Link to="/forgot-password" className="text-stone-500 hover:text-amber-400 font-mono text-xs transition-colors">
+              ¿Olvidaste tu contraseña?
+            </Link>
+          </p>
         </form>
 
         <p className="mt-8 text-center text-stone-500 text-sm">

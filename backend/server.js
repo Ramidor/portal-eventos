@@ -5,6 +5,11 @@ const http = require("http");
 const { Server } = require("socket.io");
 require("dotenv").config();
 
+if (!process.env.JWT_SECRET) {
+  console.error("FATAL: JWT_SECRET no está definido en las variables de entorno");
+  process.exit(1);
+}
+
 const app = express();
 const server = http.createServer(app); // Socket.io necesita el server HTTP nativo
 
@@ -38,6 +43,12 @@ app.use("/events/:id/messages", messageRoutes); // REST: historial paginado
 // ── WebSocket: Muro en tiempo real ─────────────────────────────────────────────
 const wall = require("./src/sockets/wall");
 wall(io);
+
+// ── Cron jobs ──────────────────────────────────────────────────────────────────
+const startCleanupJob   = require("./src/jobs/cleanup");
+const startRemindersJob = require("./src/jobs/reminders");
+startCleanupJob();
+startRemindersJob();
 
 // ── Arranque ───────────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 3000;

@@ -32,12 +32,16 @@ model User {
   emailVerified          Boolean   @default(false)
   verificationCode       String?
   verificationCodeExpiry DateTime?
+  resetToken             String?
+  resetTokenExpiry       DateTime?
   createdAt              DateTime  @default(now())
   updatedAt              DateTime  @updatedAt
 
-  organizedEvents Event[]      @relation("UserToOrganizer")
-  enrollments     Enrollment[]
-  messages        Message[]
+  organizedEvents  Event[]      @relation("UserToOrganizer")
+  enrollments      Enrollment[]
+  messages         Message[]
+  ratingsGiven     Rating[]     @relation("RaterToRatings")
+  ratingsReceived  Rating[]     @relation("CreatorToRatings")
 }
 
 model Event {
@@ -58,6 +62,7 @@ model Event {
   creator     User         @relation("UserToOrganizer", fields: [creatorId], references: [id])
   enrollments Enrollment[]
   messages    Message[]
+  ratings     Rating[]
 
   @@index([date])
   @@index([category])
@@ -84,4 +89,20 @@ model Message {
 
   user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
   event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+}
+
+model Rating {
+  id        Int      @id @default(autoincrement())
+  score     Int      // 1-5
+  comment   String?
+  raterId   Int
+  creatorId Int
+  eventId   Int
+  createdAt DateTime @default(now())
+
+  rater   User  @relation("RaterToRatings",   fields: [raterId],   references: [id], onDelete: Cascade)
+  creator User  @relation("CreatorToRatings", fields: [creatorId], references: [id], onDelete: Cascade)
+  event   Event @relation(fields: [eventId],  references: [id],    onDelete: Cascade)
+
+  @@unique([raterId, eventId])
 }

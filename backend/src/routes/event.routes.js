@@ -2,6 +2,7 @@ const express = require("express");
 const router  = express.Router();
 const eventController      = require("../controllers/event.controller");
 const enrollmentController = require("../controllers/enrollment.controller");
+const ratingController     = require("../controllers/rating.controller");
 const auth         = require("../middlewares/auth.middleware");
 const requireAdmin = require("../middlewares/admin.middleware");
 
@@ -22,5 +23,10 @@ router.get("/:id/enrollments/me", auth, enrollmentController.getMyEnrollmentStat
 router.get("/:id/enrollments",    auth, enrollmentController.getEnrollments);
 router.post("/:id/enroll",        auth, enrollmentController.enroll);
 router.delete("/:id/enroll",      auth, enrollmentController.unenroll);
+
+// ── Valoraciones ──────────────────────────────
+router.get("/:id/ratings/me", auth, ratingController.getMyRating);
+router.get("/:id/ratings",         ratingController.getEventRatings);
+router.post("/:id/ratings",   auth, ratingController.submitRating);
 
 module.exports = router;
