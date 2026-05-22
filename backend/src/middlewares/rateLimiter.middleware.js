@@ -8,4 +8,12 @@ const authLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-module.exports = { authLimiter };
+const uploadLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  message: { error: "Demasiadas subidas. Espera 15 minutos." },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+module.exports = { authLimiter, uploadLimiter };

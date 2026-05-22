@@ -52,7 +52,7 @@ model Event {
   location     String
   latitude     Float?
   longitude    Float?
-  image        String?
+  images       String[]
   category     Category @default(OTRO)
   maxAttendees Int?
   creatorId    Int
@@ -66,6 +66,7 @@ model Event {
 
   @@index([date])
   @@index([category])
+  @@index([creatorId])
 }
 
 model Enrollment {
@@ -78,6 +79,8 @@ model Enrollment {
   event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
   @@unique([userId, eventId])
+  @@index([userId])
+  @@index([eventId])
 }
 
 model Message {
@@ -89,6 +92,8 @@ model Message {
 
   user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
   event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([eventId])
 }
 
 model Rating {
@@ -105,4 +110,5 @@ model Rating {
   event   Event @relation(fields: [eventId],  references: [id],    onDelete: Cascade)
 
   @@unique([raterId, eventId])
+  @@index([creatorId])
 }

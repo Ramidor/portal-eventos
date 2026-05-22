@@ -3,6 +3,9 @@ import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { CATEGORIES } from "../constants/categories";
 import "../utils/leafletFix";
+import api from "../services/api";
+
+const MAX_IMAGES = 5;
 
 function toDatetimeLocal(isoString) {
   if (!isoString) return "";
@@ -23,16 +26,19 @@ function MapClickHandler({ onLocationSelect }) {
 
 export default function EventForm({ initialData = {}, onSubmit, loading, error, submitLabel = "Guardar" }) {
   const [form, setForm] = useState({
-    title:       initialData.title       || "",
-    description: initialData.description || "",
-    date:        toDatetimeLocal(initialData.date),
-    location:    initialData.location    || "",
-    latitude:    initialData.latitude    || null,
-    longitude:   initialData.longitude   || null,
-    image:        initialData.image        || "",
+    title:        initialData.title        || "",
+    description:  initialData.description  || "",
+    date:         toDatetimeLocal(initialData.date),
+    location:     initialData.location     || "",
+    latitude:     initialData.latitude     || null,
+    longitude:    initialData.longitude    || null,
     category:     initialData.category     || "OTRO",
     maxAttendees: initialData.maxAttendees || "",
   });
+
+  const [images, setImages]           = useState(initialData.images || []);
+  const [uploading, setUploading]     = useState(false);
+  const [uploadError, setUploadError] = useState("");
 
   const [searchQuery, setSearchQuery]   = useState(initialData.location || "");
   const [searching, setSearching]       = useState(false);
@@ -95,6 +101,39 @@ export default function EventForm({ initialData = {}, onSubmit, loading, error, 
       .catch(() => {});
   };
 
+  const handleImageUpload = async (e) => {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+    const remaining = MAX_IMAGES - images.length;
+    if (files.length > remaining) {
+      setUploadError(`Solo puedes añadir ${remaining} imagen${remaining !== 1 ? "es" : ""} más (máx. ${MAX_IMAGES})`);
+      e.target.value = "";
+      return;
+    }
+    const tooBig = files.filter((f) => f.size > 5 * 1024 * 1024);
+    if (tooBig.length) {
+      setUploadError(`${tooBig.map((f) => f.name).join(", ")} supera${tooBig.length > 1 ? "n" : ""} los 5 MB permitidos`);
+      e.target.value = "";
+      return;
+    }
+    setUploading(true);
+    setUploadError("");
+    try {
+      const formData = new FormData();
+      files.forEach((f) => formData.append("images", f));
+      const { data } = await api.post("/upload", formData);
+      setImages((prev) => [...prev, ...data.urls]);
+    } catch {
+      setUploadError("Error al subir las imágenes. Comprueba el formato y el tamaño (máx. 5 MB).");
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
+  };
+
+  const removeImage = (index) =>
+    setImages((prev) => prev.filter((_, i) => i !== index));
+
   const minDateStr = (() => {
     const d = new Date();
     d.setMinutes(d.getMinutes() + 30);
@@ -106,6 +145,7 @@ export default function EventForm({ initialData = {}, onSubmit, loading, error, 
     e.preventDefault();
     onSubmit({
       ...form,
+      images,
       maxAttendees: form.maxAttendees !== "" ? Number(form.maxAttendees) : null,
     });
   };
@@ -219,21 +259,62 @@ export default function EventForm({ initialData = {}, onSubmit, loading, error, 
         </p>
       </div>
 
-      {/* Imagen */}
+      {/* Imágenes */}
       <div>
         <label className="block text-stone-400 text-xs font-mono tracking-widest uppercase mb-2">
-          Imagen <span className="text-stone-600 normal-case font-sans tracking-normal">— URL opcional</span>
+          Imágenes
+          <span className="text-stone-600 normal-case font-sans tracking-normal ml-1">
+            — {images.length}/{MAX_IMAGES} · máx. 5 MB por imagen
+          </span>
         </label>
-        <input
-          type="url" name="image" value={form.image} onChange={handleChange}
-          placeholder="https://..."
-          className="w-full bg-stone-900 border border-stone-700 text-stone-100 rounded-lg px-4 py-3 text-sm placeholder-stone-600 focus:outline-none focus:border-amber-400 transition-colors"
-        />
-        {form.image && (
-          <img src={form.image} alt="Preview"
-            className="mt-3 w-full h-40 object-cover rounded-lg border border-stone-700"
-            onError={(e) => { e.target.style.display = "none"; }}
-          />
+
+        {/* Grid de previews */}
+        {images.length > 0 && (
+          <div className="grid grid-cols-3 gap-2 mb-3">
+            {images.map((url, i) => (
+              <div key={i} className="relative group">
+                <img
+                  src={url} alt=""
+                  className="w-full h-24 object-cover rounded-lg border border-stone-700"
+                />
+                <button
+                  type="button"
+                  onClick={() => removeImage(i)}
+                  className="absolute top-1 right-1 bg-stone-950/80 text-stone-400 hover:text-red-400 rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                >
+                  ✕
+                </button>
+                {i === 0 && (
+                  <span className="absolute bottom-1 left-1 bg-amber-400/90 text-stone-950 text-[10px] font-mono px-1.5 py-0.5 rounded">
+                    portada
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Botón añadir */}
+        {images.length < MAX_IMAGES && (
+          <label className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg border border-dashed border-stone-700 text-stone-400 hover:border-amber-400 hover:text-amber-400 transition-colors text-sm ${uploading ? "opacity-50 pointer-events-none" : "cursor-pointer"}`}>
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              multiple
+              className="hidden"
+              onChange={handleImageUpload}
+              disabled={uploading}
+            />
+            {uploading
+              ? "Subiendo..."
+              : images.length === 0
+                ? "Seleccionar imágenes"
+                : `Añadir más (${images.length}/${MAX_IMAGES})`}
+          </label>
+        )}
+
+        {uploadError && (
+          <p className="text-red-400 text-xs font-mono mt-2">{uploadError}</p>
         )}
       </div>
 

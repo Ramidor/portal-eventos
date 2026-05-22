@@ -5,8 +5,14 @@ const http = require("http");
 const { Server } = require("socket.io");
 require("dotenv").config();
 
-if (!process.env.JWT_SECRET) {
-  console.error("FATAL: JWT_SECRET no está definido en las variables de entorno");
+const REQUIRED_ENV = [
+  "JWT_SECRET", "DATABASE_URL", "CLIENT_URL",
+  "SMTP_HOST", "SMTP_USER", "SMTP_PASS",
+  "CLOUDINARY_CLOUD_NAME", "CLOUDINARY_API_KEY", "CLOUDINARY_API_SECRET",
+];
+const missingEnv = REQUIRED_ENV.filter((v) => !process.env[v]);
+if (missingEnv.length) {
+  console.error(`FATAL: Variables de entorno faltantes: ${missingEnv.join(", ")}`);
   process.exit(1);
 }
 
@@ -29,16 +35,25 @@ const { authLimiter } = require("./src/middlewares/rateLimiter.middleware");
 
 app.get("/", (req, res) => res.send("API funcionando 🚀"));
 
-// ── Rutas REST ─────────────────────────────────────────────────────────────────
-const authRoutes = require("./src/routes/auth.routes");
-const eventRoutes = require("./src/routes/event.routes");
-const userRoutes = require("./src/routes/user.routes");
-const messageRoutes = require("./src/routes/message.routes");
+// ── Swagger UI ─────────────────────────────────────────────────────────────────
+const swaggerUi   = require("swagger-ui-express");
+const swaggerSpec = require("./src/config/swagger");
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+  customSiteTitle: "Portal de Eventos — API Docs",
+}));
 
-app.use("/auth", authLimiter, authRoutes);
-app.use("/events", eventRoutes);
-app.use("/users", userRoutes);
-app.use("/events/:id/messages", messageRoutes); // REST: historial paginado
+// ── Rutas REST ─────────────────────────────────────────────────────────────────
+const authRoutes   = require("./src/routes/auth.routes");
+const eventRoutes  = require("./src/routes/event.routes");
+const userRoutes   = require("./src/routes/user.routes");
+const messageRoutes = require("./src/routes/message.routes");
+const uploadRoutes = require("./src/routes/upload.routes");
+
+app.use("/auth",    authLimiter, authRoutes);
+app.use("/events",  eventRoutes);
+app.use("/users",   userRoutes);
+app.use("/upload",  uploadRoutes);
+app.use("/events/:id/messages", messageRoutes);
 
 // ── WebSocket: Muro en tiempo real ─────────────────────────────────────────────
 const wall = require("./src/sockets/wall");

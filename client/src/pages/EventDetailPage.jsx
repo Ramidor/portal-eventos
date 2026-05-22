@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
@@ -8,6 +8,40 @@ import EventWall from "../components/EventWall";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
 import { CATEGORY_LABELS } from "../constants/categories";
+
+function ImageCarousel({ images, title }) {
+  const [idx, setIdx] = useState(0);
+  const prev = useCallback(() => setIdx((i) => (i - 1 + images.length) % images.length), [images.length]);
+  const next = useCallback(() => setIdx((i) => (i + 1) % images.length), [images.length]);
+  if (!images?.length) return null;
+  return (
+    <div className="relative rounded-xl overflow-hidden border border-stone-800">
+      <img
+        src={images[idx]} alt={`${title} ${idx + 1}`}
+        className="w-full h-64 object-cover"
+      />
+      {images.length > 1 && (
+        <>
+          <button onClick={prev}
+            className="absolute left-2 top-1/2 -translate-y-1/2 bg-stone-950/70 hover:bg-stone-950/90 text-stone-100 rounded-full w-8 h-8 flex items-center justify-center transition-colors cursor-pointer">
+            ‹
+          </button>
+          <button onClick={next}
+            className="absolute right-2 top-1/2 -translate-y-1/2 bg-stone-950/70 hover:bg-stone-950/90 text-stone-100 rounded-full w-8 h-8 flex items-center justify-center transition-colors cursor-pointer">
+            ›
+          </button>
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
+            {images.map((_, i) => (
+              <button key={i} onClick={() => setIdx(i)}
+                className={`w-1.5 h-1.5 rounded-full transition-colors cursor-pointer ${i === idx ? "bg-amber-400" : "bg-stone-500 hover:bg-stone-300"}`}
+              />
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
 
 function StarRating({ value, onChange, readonly = false }) {
   const [hovered, setHovered] = useState(0);
@@ -97,6 +131,7 @@ export default function EventDetailPage() {
   };
 
   const handleUnenroll = async () => {
+    if (!confirm("¿Cancelar tu inscripción en este evento?")) return;
     setEnrollLoading(true); setEnrollError("");
     try {
       await api.delete(`/events/${id}/enroll`);
@@ -197,7 +232,21 @@ export default function EventDetailPage() {
           <div className="flex flex-wrap items-center gap-4 text-stone-400 text-sm">
             <span className="font-mono">🕐 {formattedTime}</span>
             <span className="font-mono">📍 {event.location}</span>
-            <span>Organizado por <span className="text-stone-200">{event.creator?.name}</span></span>
+            <span>
+              Organizado por{" "}
+              <Link
+                to={`/users/${event.creator?.id}`}
+                className="text-stone-200 hover:text-amber-400 transition-colors"
+              >
+                {event.creator?.name}
+              </Link>
+              {event.creatorRating?.average !== null && event.creatorRating?.average !== undefined && (
+                <span className="text-amber-400 font-mono text-xs ml-2">
+                  ★ {event.creatorRating.average}
+                  <span className="text-stone-500 ml-1">({event.creatorRating.total})</span>
+                </span>
+              )}
+            </span>
           </div>
         </div>
 
@@ -207,11 +256,7 @@ export default function EventDetailPage() {
           <div className="lg:col-span-2 space-y-8">
 
             {/* Imagen */}
-            {event.image && (
-              <img src={event.image} alt={event.title}
-                className="w-full h-56 object-cover rounded-xl border border-stone-800"
-              />
-            )}
+            <ImageCarousel images={event.images} title={event.title} />
 
             {/* Descripción */}
             {event.description && (

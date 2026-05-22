@@ -2,16 +2,12 @@ const cron  = require("node-cron");
 const prisma = require("../config/prisma");
 
 function startCleanupJob() {
+  // Ejecutar cada día a las 03:00
   cron.schedule("0 3 * * *", async () => {
     const cutoff24h = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
     try {
-      // 1. Eliminar eventos pasados con más de 24h
-      const { count: eventsDeleted } = await prisma.event.deleteMany({
-        where: { date: { lt: cutoff24h } },
-      });
-
-      // 2. Eliminar usuarios no verificados con más de 24h
+      // Los eventos NO se eliminan — son datos históricos necesarios para valoraciones y perfiles
       const { count: usersDeleted } = await prisma.user.deleteMany({
         where: {
           emailVerified: false,
@@ -19,7 +15,9 @@ function startCleanupJob() {
         },
       });
 
-      console.log(`[CRON] Eventos eliminados: ${eventsDeleted} | Usuarios sin verificar eliminados: ${usersDeleted}`);
+      if (usersDeleted > 0) {
+        console.log(`[CRON] Usuarios sin verificar eliminados: ${usersDeleted}`);
+      }
     } catch (error) {
       console.error("[CRON] Error en limpieza:", error);
     }

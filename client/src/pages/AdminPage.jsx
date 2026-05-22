@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect, useCallback } from "react";
-import Navbar from "../components/Navbar";
+import PageLayout from "../components/PageLayout";
 import { useAuth } from "../context/AuthContext";
 import { CATEGORY_LABELS } from "../constants/categories";
 import api from "../services/api";
@@ -62,10 +62,7 @@ export default function AdminPage() {
   };
 
   return (
-    <div className="min-h-screen bg-stone-950">
-      <Navbar />
-
-      <main className="max-w-5xl mx-auto px-6 py-12">
+    <PageLayout maxWidth="max-w-5xl">
 
         <div className="mb-8">
           <p className="text-stone-500 font-mono text-xs tracking-widest uppercase mb-2">
@@ -197,7 +194,6 @@ export default function AdminPage() {
           </div>
         )}
 
-      </main>
-    </div>
+    </PageLayout>
   );
 }

@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect } from "react";
-import Navbar from "../components/Navbar";
+import PageLayout from "../components/PageLayout";
 import EventCard from "../components/EventCard";
 import api from "../services/api";
 
@@ -93,10 +93,7 @@ export default function EventsPage() {
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
-    <div className="min-h-screen bg-stone-950">
-      <Navbar />
-
-      <main className="max-w-6xl mx-auto px-6 py-12">
+    <PageLayout>
         <div className="mb-10">
           <p className="text-stone-500 font-mono text-xs tracking-widest uppercase mb-2">
             Próximos eventos
@@ -153,7 +150,7 @@ export default function EventsPage() {
         )}
         {!loading && !error && displayed.length > 0 && (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 items-stretch">
               {displayed.map((event) => (
                 <EventCard
                   key={event.id} event={event}
@@ -185,7 +182,6 @@ export default function EventsPage() {
             )}
           </>
         )}
-      </main>
-    </div>
+    </PageLayout>
   );
 }

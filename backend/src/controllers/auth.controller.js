@@ -3,10 +3,7 @@ const prisma  = require("../config/prisma");
 const bcrypt  = require("bcrypt");
 const jwt     = require("jsonwebtoken");
 const { sendVerificationCode, sendPasswordReset } = require("../services/email.service");
-
-// Regex de validación
-const EMAIL_REGEX    = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-const PASSWORD_REGEX = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()\-_=+{};:,<.>])(.{8,})$/;
+const { EMAIL_REGEX, PASSWORD_REGEX } = require("../utils/validation");
 
 function generateOTP() {
   return String(randomInt(100000, 1000000)); // 6 dígitos, criptográficamente seguro

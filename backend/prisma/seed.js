@@ -69,6 +69,13 @@ async function main() {
     return dt;
   };
 
+  const past = (days, hours = 19) => {
+    const dt = new Date(now);
+    dt.setDate(dt.getDate() - days);
+    dt.setHours(hours, 0, 0, 0);
+    return dt;
+  };
+
   const [e1, e2, e3, e4, e5, e6, e7, e8] = await Promise.all([
     prisma.event.create({ data: {
       title: "Festival de Jazz en el Retiro",
@@ -80,7 +87,7 @@ async function main() {
       category: "MUSICA",
       maxAttendees: 200,
       creatorId: ana.id,
-      image: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=800",
+      images: ["https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=800"],
     }}),
     prisma.event.create({ data: {
       title: "Hackathon de IA: 48 horas de innovación",
@@ -92,7 +99,7 @@ async function main() {
       category: "TECNOLOGIA",
       maxAttendees: 80,
       creatorId: carlos.id,
-      image: "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=800",
+      images: ["https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=800"],
     }}),
     prisma.event.create({ data: {
       title: "Ruta de senderismo por Guadarrama",
@@ -114,7 +121,7 @@ async function main() {
       longitude: 2.1661,
       category: "ARTE",
       creatorId: sofia.id,
-      image: "https://images.unsplash.com/photo-1547891654-e66ed7ebb968?w=800",
+      images: ["https://images.unsplash.com/photo-1547891654-e66ed7ebb968?w=800"],
     }}),
     prisma.event.create({ data: {
       title: "Cata de vinos de la Ribera del Duero",
@@ -126,7 +133,7 @@ async function main() {
       category: "GASTRONOMIA",
       maxAttendees: 20,
       creatorId: lucia.id,
-      image: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=800",
+      images: ["https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=800"],
     }}),
     prisma.event.create({ data: {
       title: "Taller de React avanzado: Patrones y rendimiento",
@@ -138,7 +145,7 @@ async function main() {
       category: "EDUCACION",
       maxAttendees: 30,
       creatorId: carlos.id,
-      image: "https://images.unsplash.com/photo-1633356122102-3fe601e05bd2?w=800",
+      images: ["https://images.unsplash.com/photo-1633356122102-3fe601e05bd2?w=800"],
     }}),
     prisma.event.create({ data: {
       title: "Networking Startups: Inversores y Fundadores",
@@ -150,7 +157,7 @@ async function main() {
       category: "NEGOCIOS",
       maxAttendees: 100,
       creatorId: ana.id,
-      image: "https://images.unsplash.com/photo-1556761175-b413da4baf72?w=800",
+      images: ["https://images.unsplash.com/photo-1556761175-b413da4baf72?w=800"],
     }}),
     prisma.event.create({ data: {
       title: "Torneo de fútbol 7 — Liga Primavera",
@@ -245,6 +252,74 @@ async function main() {
 
   await prisma.message.createMany({ data: messages });
   console.log(`💬 Mensajes creados: ${messages.length}`);
+
+  // ── Eventos pasados (para probar valoraciones) ─────────────────────────────
+  const [ep1, ep2, ep3] = await Promise.all([
+    prisma.event.create({ data: {
+      title: "Concierto de Flamenco — Noche Flamenca",
+      description: "Una noche mágica de flamenco puro con los mejores artistas de Sevilla. Tablao íntimo con capacidad limitada.",
+      date: past(15, 21),
+      location: "Tablao El Palacio, Sevilla",
+      latitude: 37.3886, longitude: -5.9823,
+      category: "MUSICA", maxAttendees: 60,
+      creatorId: sofia.id,
+      images: ["https://images.unsplash.com/photo-1547036967-23d11aacaee0?w=800"],
+    }}),
+    prisma.event.create({ data: {
+      title: "Maratón Urbano de Valencia",
+      description: "Carrera popular de 10km por el centro histórico de Valencia. Abierta a todos los niveles. Camiseta y medalla incluidas.",
+      date: past(8, 8),
+      location: "Plaza del Ayuntamiento, Valencia",
+      latitude: 39.4694, longitude: -0.3769,
+      category: "DEPORTE", maxAttendees: 200,
+      creatorId: mario.id,
+      images: ["https://images.unsplash.com/photo-1571008887538-b36bb32f4571?w=800"],
+    }}),
+    prisma.event.create({ data: {
+      title: "Feria Gastronómica — Sabores del Mediterráneo",
+      description: "Feria de productores locales con degustaciones de aceite, queso, vino y conservas artesanales. Entrada gratuita.",
+      date: past(5, 11),
+      location: "Mercado Central, Barcelona",
+      latitude: 41.3797, longitude: 2.1724,
+      category: "GASTRONOMIA",
+      creatorId: lucia.id,
+      images: ["https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800"],
+    }}),
+  ]);
+
+  // Inscripciones en eventos pasados
+  await prisma.enrollment.createMany({
+    data: [
+      { userId: ana.id,    eventId: ep1.id },
+      { userId: carlos.id, eventId: ep1.id },
+      { userId: mario.id,  eventId: ep1.id },
+      { userId: ana.id,    eventId: ep2.id },
+      { userId: sofia.id,  eventId: ep2.id },
+      { userId: carlos.id, eventId: ep2.id },
+      { userId: mario.id,  eventId: ep3.id },
+      { userId: ana.id,    eventId: ep3.id },
+      { userId: carlos.id, eventId: ep3.id },
+    ],
+  });
+
+  // Valoraciones
+  await prisma.rating.createMany({
+    data: [
+      // Concierto flamenco (creador: sofia) — valoran ana, carlos, mario
+      { score: 5, comment: "Absolutamente increíble, la mejor noche flamenca que he vivido.", raterId: ana.id,    creatorId: sofia.id, eventId: ep1.id },
+      { score: 5, comment: "Una experiencia única, la bailaora fue impresionante.", raterId: carlos.id, creatorId: sofia.id, eventId: ep1.id },
+      { score: 4, comment: "Muy buena organización aunque el espacio era algo pequeño.", raterId: mario.id,  creatorId: sofia.id, eventId: ep1.id },
+      // Maratón (creador: mario) — valoran ana, sofia, carlos
+      { score: 4, comment: "Muy bien organizado, el recorrido era precioso.", raterId: ana.id,    creatorId: mario.id, eventId: ep2.id },
+      { score: 5, comment: "¡Conseguí mi mejor marca! Repetiré el año que viene.", raterId: sofia.id,  creatorId: mario.id, eventId: ep2.id },
+      { score: 3, comment: "La logística de los avituallamientos mejorable, pero la carrera estuvo bien.", raterId: carlos.id, creatorId: mario.id, eventId: ep2.id },
+      // Feria gastronómica (creador: lucia) — valoran mario, ana, carlos
+      { score: 5, comment: "Los productores locales eran maravillosos, me llevé aceite para un año.", raterId: mario.id,  creatorId: lucia.id, eventId: ep3.id },
+      { score: 4, comment: "Muy variado y bien organizado. Los quesos artesanos estaban increíbles.", raterId: ana.id,    creatorId: lucia.id, eventId: ep3.id },
+      { score: 4, comment: "Entrada gratuita y calidad altísima. Volveré sin duda.", raterId: carlos.id, creatorId: lucia.id, eventId: ep3.id },
+    ],
+  });
+  console.log("⭐ Eventos pasados y valoraciones creados: 3 eventos, 9 valoraciones");
 
   console.log("\n✨ Seed completado. Credenciales de acceso:");
   console.log("   Todos los usuarios usan la contraseña: Test1234!");

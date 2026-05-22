@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import Navbar from "../components/Navbar";
+import PageLayout from "../components/PageLayout";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
 
@@ -37,15 +37,15 @@ export default function ProfilePage() {
   const [ratingSummary, setRatingSummary] = useState(null);
 
   useEffect(() => {
-    Promise.all([
+    Promise.allSettled([
       api.get("/users/me/events"),
       api.get("/users/me/enrollments"),
       api.get("/users/me/rating-summary"),
     ])
       .then(([eventsRes, enrollRes, ratingRes]) => {
-        setMyEvents(eventsRes.data.events);
-        setMyEnrollments(enrollRes.data.enrollments);
-        setRatingSummary(ratingRes.data);
+        if (eventsRes.status === "fulfilled")  setMyEvents(eventsRes.value.data.events);
+        if (enrollRes.status === "fulfilled")  setMyEnrollments(enrollRes.value.data.enrollments);
+        if (ratingRes.status === "fulfilled")  setRatingSummary(ratingRes.value.data);
       })
       .finally(() => setLoading(false));
   }, []);
@@ -78,10 +78,8 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="min-h-screen bg-stone-950">
-      <Navbar />
-      <main className="max-w-4xl mx-auto px-6 py-12">
-        <div className="mb-10">
+    <PageLayout maxWidth="max-w-4xl">
+      <div className="mb-10">
           <p className="text-stone-500 font-mono text-xs tracking-widest uppercase mb-2">Mi cuenta</p>
           <h1 className="text-4xl font-serif text-stone-100">{user?.name}</h1>
         </div>
@@ -192,7 +190,6 @@ export default function ProfilePage() {
           </div>
 
         </div>
-      </main>
-    </div>
+    </PageLayout>
   );
 }

@@ -2,6 +2,7 @@ const prisma  = require("../config/prisma");
 const bcrypt  = require("bcrypt");
 const parseId = require("../utils/parseId");
 const { sendAccountDeleted } = require("../services/email.service");
+const { PASSWORD_REGEX } = require("../utils/validation");
 
 exports.getMe = async (req, res) => {
   try {
@@ -34,7 +35,6 @@ exports.updateMe = async (req, res) => {
       if (!currentPassword) {
         return res.status(400).json({ error: "Debes proporcionar tu contraseña actual para cambiarla" });
       }
-      const PASSWORD_REGEX = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()\-_=+{};:,<.>]).{8,}$/;
       if (!PASSWORD_REGEX.test(newPassword)) {
         return res.status(400).json({ error: "La nueva contraseña debe tener al menos 8 caracteres, una mayúscula, un número y un símbolo" });
       }
@@ -133,5 +133,54 @@ exports.updateUserRole = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Error al actualizar el rol" });
+  }
+};
+
+// ── GET /users/:id/public  →  Público ────────────────────────────────────────
+exports.getPublicProfile = async (req, res) => {
+  try {
+    const targetId = parseId(req.params.id);
+    if (!targetId) return res.status(400).json({ error: "ID no válido" });
+
+    const [user, events, ratingAgg, ratings] = await Promise.all([
+      prisma.user.findUnique({
+        where: { id: targetId },
+        select: { id: true, name: true, createdAt: true },
+      }),
+      prisma.event.findMany({
+        where: { creatorId: targetId },
+        include: { _count: { select: { enrollments: true } } },
+        orderBy: { date: "desc" },
+      }),
+      prisma.rating.aggregate({
+        where: { creatorId: targetId },
+        _avg:   { score: true },
+        _count: { score: true },
+      }),
+      prisma.rating.findMany({
+        where: { creatorId: targetId },
+        include: {
+          rater: { select: { id: true, name: true } },
+          event: { select: { id: true, title: true } },
+        },
+        orderBy: { createdAt: "desc" },
+        take: 6,
+      }),
+    ]);
+
+    if (!user) return res.status(404).json({ error: "Usuario no encontrado" });
+
+    res.json({
+      user,
+      events,
+      ratingSummary: {
+        average: ratingAgg._avg.score ? Math.round(ratingAgg._avg.score * 10) / 10 : null,
+        total:   ratingAgg._count.score,
+      },
+      ratings,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error al obtener el perfil" });
   }
 };

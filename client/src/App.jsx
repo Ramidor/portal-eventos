@@ -13,6 +13,7 @@ import CreateEventPage         from "./pages/CreateEventPage";
 import EditEventPage           from "./pages/EditEventPage";
 import ProfilePage             from "./pages/ProfilePage";
 import AdminPage               from "./pages/AdminPage";
+import UserProfilePage         from "./pages/UserProfilePage";
 
 export default function App() {
   return (
@@ -26,6 +27,7 @@ export default function App() {
       <Route path="/reset-password"       element={<ResetPasswordPage />} />
       <Route path="/events"               element={<EventsPage />} />
       <Route path="/events/:id"           element={<EventDetailPage />} />
+      <Route path="/users/:id"            element={<UserProfilePage />} />
 
       {/* Privadas */}
       <Route path="/events/new"     element={<ProtectedRoute><CreateEventPage /></ProtectedRoute>} />

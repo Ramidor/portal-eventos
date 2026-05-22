@@ -1,3 +1,4 @@
+const cloudinary = require("cloudinary").v2;
 const prisma   = require("../config/prisma");
 const parseId  = require("../utils/parseId");
 const {
@@ -5,6 +6,19 @@ const {
   sendEventCancelledToCreator,
   sendEventModified,
 } = require("../services/email.service");
+
+// Extrae el public_id de una URL de Cloudinary para poder borrarla
+function cloudinaryPublicId(url) {
+  try {
+    const parts = url.split("/");
+    const uploadIdx = parts.indexOf("upload");
+    if (uploadIdx === -1) return null;
+    // Salta la versión (v1234...) si existe
+    const afterUpload = parts.slice(uploadIdx + 1);
+    if (/^v\d+$/.test(afterUpload[0])) afterUpload.shift();
+    return afterUpload.join("/").replace(/\.[^/.]+$/, ""); // quita extensión
+  } catch { return null; }
+}
 
 const VALID_CATEGORIES = ["MUSICA","DEPORTE","ARTE","TECNOLOGIA","GASTRONOMIA","EDUCACION","NEGOCIOS","OTRO"];
 
@@ -83,7 +97,20 @@ exports.getOne = async (req, res) => {
       },
     });
     if (!event) return res.status(404).json({ error: "Evento no encontrado" });
-    res.json(event);
+
+    const ratingAgg = await prisma.rating.aggregate({
+      where: { creatorId: event.creatorId },
+      _avg:   { score: true },
+      _count: { score: true },
+    });
+
+    res.json({
+      ...event,
+      creatorRating: {
+        average: ratingAgg._avg.score ? Math.round(ratingAgg._avg.score * 10) / 10 : null,
+        total:   ratingAgg._count.score,
+      },
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Error al obtener el evento" });
@@ -92,7 +119,7 @@ exports.getOne = async (req, res) => {
 
 exports.create = async (req, res) => {
   try {
-    const { title, description, date, location, latitude, longitude, image, category, maxAttendees } = req.body;
+    const { title, description, date, location, latitude, longitude, images, category, maxAttendees } = req.body;
     const creatorId = req.user.id;
 
     if (!title || !date || !location) {
@@ -119,7 +146,7 @@ exports.create = async (req, res) => {
         location,
         latitude:     latitude  != null && latitude  !== "" ? Number(latitude)  : null,
         longitude:    longitude != null && longitude !== "" ? Number(longitude) : null,
-        image:        image        ?? null,
+        images:       Array.isArray(images) ? images : [],
         category:     category     || "OTRO",
         maxAttendees: maxAttendees != null && maxAttendees !== "" ? Number(maxAttendees) : null,
         creatorId,
@@ -137,7 +164,7 @@ exports.update = async (req, res) => {
   try {
     const id = parseId(req.params.id);
     if (!id) return res.status(400).json({ error: "ID no válido" });
-    const { title, description, date, location, latitude, longitude, image, category, maxAttendees } = req.body;
+    const { title, description, date, location, latitude, longitude, images, category, maxAttendees } = req.body;
     const userId = req.user.id;
 
     const event = await prisma.event.findUnique({
@@ -184,7 +211,7 @@ exports.update = async (req, res) => {
         ...(location    && { location }),
         ...(latitude    !== undefined && { latitude:  latitude  != null && latitude  !== "" ? Number(latitude)  : null }),
         ...(longitude   !== undefined && { longitude: longitude != null && longitude !== "" ? Number(longitude) : null }),
-        ...(image       !== undefined && { image }),
+        ...(images      !== undefined && { images: Array.isArray(images) ? images : [] }),
         ...(category    && { category }),
         ...(maxAttendees !== undefined && { maxAttendees: maxAttendees != null && maxAttendees !== "" ? Number(maxAttendees) : null }),
       },
@@ -230,6 +257,14 @@ exports.remove = async (req, res) => {
 
     await prisma.event.delete({ where: { id } });
     res.json({ message: "Evento eliminado correctamente" });
+
+    // Eliminar imágenes de Cloudinary (fire-and-forget)
+    if (event.images?.length) {
+      event.images.forEach((url) => {
+        const publicId = cloudinaryPublicId(url);
+        if (publicId) cloudinary.uploader.destroy(publicId).catch(console.error);
+      });
+    }
 
     // Notificaciones (fire-and-forget)
     enrolleeEmails.forEach((email) =>

@@ -20,7 +20,7 @@ export default function ResendVerificationPage() {
     setError(""); 
     try {
       await api.post("/auth/resend-verification", { email });
-      navigate(`/verify-email?email=${encodeURIComponent(email)}`);
+      navigate("/verify-email", { state: { email } });
     } catch (err) {
       setError(err.response?.data?.error || "Error al reenviar el email");
     } finally {
