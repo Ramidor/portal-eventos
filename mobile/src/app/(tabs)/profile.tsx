@@ -21,7 +21,7 @@ export default function ProfileScreen() {
   const [ratingSummary, setRatingSummary] = useState<{ average: number | null; total: number } | null>(null);
   const [loading, setLoading]             = useState(true);
   const [editing, setEditing]             = useState(false);
-  const [form, setForm] = useState({ name: user?.name ?? '', email: user?.email ?? '', currentPassword: '', newPassword: '' });
+  const [form, setForm] = useState({ name: user?.name ?? '', currentPassword: '', newPassword: '' });
   const [saving, setSaving]   = useState(false);
   const [saveError, setSaveError] = useState('');
 
@@ -41,8 +41,7 @@ export default function ProfileScreen() {
     setSaving(true); setSaveError('');
     try {
       const payload: any = {};
-      if (form.name !== user?.name)   payload.name  = form.name;
-      if (form.email !== user?.email) payload.email = form.email;
+      if (form.name !== user?.name) payload.name = form.name;
       if (form.newPassword) {
         payload.currentPassword = form.currentPassword;
         payload.newPassword     = form.newPassword;
@@ -50,7 +49,7 @@ export default function ProfileScreen() {
       if (!Object.keys(payload).length) { setEditing(false); setSaving(false); return; }
       const { data } = await api.put('/users/me', payload);
       await login(data.user, token!);
-      setForm({ name: data.user.name, email: data.user.email, currentPassword: '', newPassword: '' });
+      setForm({ name: data.user.name, currentPassword: '', newPassword: '' });
       setEditing(false);
     } catch (err: any) {
       setSaveError(err.response?.data?.error || 'Error al guardar');
@@ -105,12 +104,6 @@ export default function ProfileScreen() {
                 <FormField label="Nombre">
                   <TextInput style={styles.input} value={form.name}
                     onChangeText={(v) => setForm((f) => ({ ...f, name: v }))}
-                    placeholderTextColor={Colors.textMuted} />
-                </FormField>
-                <FormField label="Email">
-                  <TextInput style={styles.input} value={form.email}
-                    onChangeText={(v) => setForm((f) => ({ ...f, email: v }))}
-                    keyboardType="email-address" autoCapitalize="none"
                     placeholderTextColor={Colors.textMuted} />
                 </FormField>
                 <View style={styles.separator} />

@@ -28,7 +28,7 @@ export default function ProfilePage() {
   const [loading, setLoading]           = useState(true);
   const [editing, setEditing]           = useState(false);
   const [form, setForm] = useState({
-    name: user?.name || "", email: user?.email || "",
+    name: user?.name || "",
     currentPassword: "", newPassword: "",
   });
   const [saving, setSaving]       = useState(false);
@@ -61,7 +61,6 @@ export default function ProfilePage() {
     try {
       const payload = {};
       if (form.name !== user.name) payload.name = form.name;
-      if (form.email !== user.email) payload.email = form.email;
       if (form.newPassword) {
         payload.currentPassword = form.currentPassword;
         payload.newPassword = form.newPassword;
@@ -70,7 +69,7 @@ export default function ProfilePage() {
 
       const { data } = await api.put("/users/me", payload);
       login(data.user, token);
-      setForm({ name: data.user.name, email: data.user.email, currentPassword: "", newPassword: "" });
+      setForm({ name: data.user.name, currentPassword: "", newPassword: "" });
       setSaveSuccess(true); setEditing(false);
     } catch (err) {
       setSaveError(err.response?.data?.error || "Error al guardar");
@@ -128,12 +127,6 @@ export default function ProfilePage() {
                     <input type="text" name="name" value={form.name} onChange={handleChange}
                       className="w-full bg-stone-800 border border-stone-700 text-stone-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-amber-400 transition-colors" />
                   </div>
-                  <div>
-                    <label className="block text-stone-500 text-xs font-mono mb-1">Email</label>
-                    <input type="email" name="email" value={form.email} onChange={handleChange}
-                      className="w-full bg-stone-800 border border-stone-700 text-stone-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-amber-400 transition-colors" />
-                  </div>
-
                   {/* Cambio de contraseña */}
                   <div className="pt-2 border-t border-stone-700">
                     <p className="text-stone-500 text-xs font-mono mb-3">Cambiar contraseña</p>
