@@ -23,12 +23,11 @@ exports.getMe = async (req, res) => {
 
 exports.updateMe = async (req, res) => {
   try {
-    const { name, email, currentPassword, newPassword } = req.body;
+    const { name, currentPassword, newPassword } = req.body;
     const userId = req.user.id;
     const data = {};
 
     if (name) data.name = name;
-    if (email) data.email = email;
 
     // Si quiere cambiar contraseña, verificar la actual primero
     if (newPassword) {
@@ -58,7 +57,6 @@ exports.updateMe = async (req, res) => {
 
     res.json({ message: "Perfil actualizado", user: updated });
   } catch (error) {
-    if (error.code === "P2002") return res.status(409).json({ error: "Ese email ya está en uso" });
     console.error(error);
     res.status(500).json({ error: "Error al actualizar el perfil" });
   }
