@@ -1,3 +1,4 @@
+require("dns").setDefaultResultOrder("ipv4first"); // Railway no soporta IPv6 saliente
 const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
