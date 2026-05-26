@@ -12,7 +12,8 @@ const base = (content) => `
 `;
 
 async function send(to, subject, html) {
-  await resend.emails.send({ from: FROM, to, subject, html });
+  const { error } = await resend.emails.send({ from: FROM, to, subject, html });
+  if (error) throw new Error(`Resend: ${error.message}`);
 }
 
 // ── Verificación de cuenta ────────────────────────────────────────────────────
