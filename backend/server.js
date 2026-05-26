@@ -27,6 +27,7 @@ const io = new Server(server, {
 });
 
 // ── Middlewares REST ───────────────────────────────────────────────────────────
+app.set("trust proxy", 1); // Railway usa proxy inverso
 app.use(helmet());
 app.use(cors({ origin: process.env.CLIENT_URL }));
 app.use(express.json({ limit: "10kb" }));

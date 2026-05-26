@@ -60,8 +60,8 @@ export default function EventsPage() {
     api.get(`/events?${params.toString()}`)
       .then(({ data }) => {
         if (cancelled) return;
-        setEvents(data.events);
-        setTotal(data.total);
+        setEvents(data.events ?? []);
+        setTotal(data.total ?? 0);
       })
       .catch(() => { if (!cancelled) setError("Error al cargar los eventos"); })
       .finally(() => { if (!cancelled) setLoading(false); });
