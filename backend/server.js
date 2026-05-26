@@ -8,7 +8,7 @@ require("dotenv").config();
 
 const REQUIRED_ENV = [
   "JWT_SECRET", "DATABASE_URL", "CLIENT_URL",
-  "SMTP_HOST", "SMTP_USER", "SMTP_PASS",
+  "RESEND_API_KEY",
   "CLOUDINARY_CLOUD_NAME", "CLOUDINARY_API_KEY", "CLOUDINARY_API_SECRET",
 ];
 const missingEnv = REQUIRED_ENV.filter((v) => !process.env[v]);
