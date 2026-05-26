@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -8,15 +9,18 @@ import ResendVerificationPage  from "./pages/ResendVerificationPage";
 import ForgotPasswordPage      from "./pages/ForgotPasswordPage";
 import ResetPasswordPage       from "./pages/ResetPasswordPage";
 import EventsPage              from "./pages/EventsPage";
-import EventDetailPage         from "./pages/EventDetailPage";
-import CreateEventPage         from "./pages/CreateEventPage";
-import EditEventPage           from "./pages/EditEventPage";
 import ProfilePage             from "./pages/ProfilePage";
 import AdminPage               from "./pages/AdminPage";
 import UserProfilePage         from "./pages/UserProfilePage";
 
+// Lazy: cargan en chunk separado para aislar Leaflet del bundle principal
+const EventDetailPage = lazy(() => import("./pages/EventDetailPage"));
+const CreateEventPage = lazy(() => import("./pages/CreateEventPage"));
+const EditEventPage   = lazy(() => import("./pages/EditEventPage"));
+
 export default function App() {
   return (
+    <Suspense fallback={<div className="min-h-screen bg-stone-950" />}>
     <Routes>
       {/* Públicas */}
       <Route path="/login"                element={<LoginPage />} />
@@ -40,5 +44,6 @@ export default function App() {
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/events" replace />} />
     </Routes>
+    </Suspense>
   );
 }
