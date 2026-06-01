@@ -70,7 +70,7 @@ function StarRating({ value, onChange, readonly = false }) {
 
 export default function EventDetailPage() {
   const { id } = useParams();
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
 
   const [event, setEvent]               = useState(null);
@@ -426,9 +426,11 @@ export default function EventDetailPage() {
                   {enrollError && <p className="text-red-400 text-xs font-mono">{enrollError}</p>}
                 </>
               )}
-              {isCreator && (
+              {(isCreator || isAdmin) && (
                 <>
-                  <p className="text-orange-400 font-mono text-xs text-center tracking-widest uppercase">Tu evento</p>
+                  <p className="text-orange-400 font-mono text-xs text-center tracking-widest uppercase">
+                    {isCreator ? 'Tu evento' : 'Administrador'}
+                  </p>
                   <Link to={`/events/${id}/edit`}
                     className="block w-full text-center border border-zinc-700 hover:border-orange-400 text-zinc-400 hover:text-orange-400 font-semibold py-3 rounded-lg text-sm transition-colors">
                     Editar

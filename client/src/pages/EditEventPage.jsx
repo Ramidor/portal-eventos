@@ -7,7 +7,7 @@ import api from "../services/api";
 
 export default function EditEventPage() {
   const { id } = useParams();
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
 
   const [event, setEvent]           = useState(null);
@@ -18,7 +18,7 @@ export default function EditEventPage() {
   useEffect(() => {
     api.get(`/events/${id}`)
       .then(({ data }) => {
-        if (data.creatorId !== user?.id) { navigate(`/events/${id}`, { replace: true }); return; }
+        if (data.creatorId !== user?.id && !isAdmin) { navigate(`/events/${id}`, { replace: true }); return; }
         setEvent(data);
       })
       .catch(() => setFetchError("Error al cargar el evento"));

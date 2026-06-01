@@ -171,8 +171,9 @@ exports.update = async (req, res) => {
       where: { id },
       include: { _count: { select: { enrollments: true } } },
     });
-    if (!event)                    return res.status(404).json({ error: "Evento no encontrado" });
-    if (event.creatorId !== userId) return res.status(403).json({ error: "No tienes permiso para editar este evento" });
+    if (!event) return res.status(404).json({ error: "Evento no encontrado" });
+    const isAdmin = req.user.role === "ADMIN";
+    if (!isAdmin && event.creatorId !== userId) return res.status(403).json({ error: "No tienes permiso para editar este evento" });
 
     if (date) {
       const eventDate = new Date(date);

@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect, useCallback } from "react";
+import { Link } from "react-router-dom";
 import PageLayout from "../components/PageLayout";
 import { useAuth } from "../context/AuthContext";
 import { CATEGORY_LABELS, CATEGORY_ICONS } from "../constants/categories";
@@ -179,10 +180,16 @@ export default function AdminPage() {
                         )}
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <button onClick={() => handleDeleteEvent(e.id, e.title)}
-                          className="text-zinc-600 hover:text-red-400 font-mono text-xs transition-colors cursor-pointer">
-                          Eliminar
-                        </button>
+                        <div className="flex items-center justify-end gap-4">
+                          <Link to={`/events/${e.id}/edit`}
+                            className="text-zinc-600 hover:text-orange-400 font-mono text-xs transition-colors">
+                            Editar
+                          </Link>
+                          <button onClick={() => handleDeleteEvent(e.id, e.title)}
+                            className="text-zinc-600 hover:text-red-400 font-mono text-xs transition-colors cursor-pointer">
+                            Eliminar
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );

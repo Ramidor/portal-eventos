@@ -8,11 +8,13 @@ export default function EventWall({ eventId }) {
   const navigate = useNavigate();
   const { messages, connected, error, sendMessage } = useWall(eventId, token);
   const [input, setInput] = useState("");
-  const bottomRef = useRef(null);
+  const listRef = useRef(null);
 
-  // Scroll automático al último mensaje
+  // Scroll automático al último mensaje (solo dentro del contenedor, no la página)
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (listRef.current) {
+      listRef.current.scrollTop = listRef.current.scrollHeight;
+    }
   }, [messages]);
 
   const handleSend = (e) => {
@@ -63,7 +65,7 @@ export default function EventWall({ eventId }) {
       )}
 
       {/* Lista de mensajes */}
-      <div className="h-80 overflow-y-auto px-6 py-4 space-y-4">
+      <div ref={listRef} className="h-80 overflow-y-auto px-6 py-4 space-y-4">
         {messages.length === 0 && !error && (
           <p className="text-zinc-600 text-sm text-center py-8">
             No hay mensajes todavía. ¡Sé el primero!
@@ -98,7 +100,6 @@ export default function EventWall({ eventId }) {
           );
         })}
 
-        <div ref={bottomRef} />
       </div>
 
       {/* Input */}

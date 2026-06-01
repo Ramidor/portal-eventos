@@ -33,7 +33,7 @@ type Event = {
 
 export default function EventDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const { width: screenWidth } = useWindowDimensions();
 
   const [event, setEvent]           = useState<Event | null>(null);
@@ -253,7 +253,7 @@ export default function EventDetailScreen() {
 
       {/* Botones de acción */}
       <View style={styles.actions}>
-        {isCreator ? (
+        {(isCreator || isAdmin) ? (
           <>
             <Pressable style={styles.editBtn} onPress={() => router.push(`/events/${id}/edit` as any)}>
               <Text style={styles.editBtnText}>Editar</Text>
