@@ -7,6 +7,7 @@ import { Colors } from '@/constants/colors';
 import { CATEGORIES } from '@/constants/categories';
 import DatePickerField from '@/components/DatePickerField';
 import FormField from '@/components/FormField';
+import ImagePickerField from '@/components/ImagePickerField';
 import LocationPicker from '@/components/LocationPicker';
 import api from '@/services/api';
 
@@ -14,6 +15,7 @@ type FormState = {
   title: string; description: string; location: string;
   latitude: number | null; longitude: number | null;
   category: string; maxAttendees: string;
+  images: string[];
 };
 
 export default function CreateEventScreen() {
@@ -21,6 +23,7 @@ export default function CreateEventScreen() {
     title: '', description: '', location: '',
     latitude: null, longitude: null,
     category: 'OTRO', maxAttendees: '',
+    images: [],
   });
   const [date, setDate]       = useState<Date | null>(null);
   const [loading, setLoading] = useState(false);
@@ -84,6 +87,13 @@ export default function CreateEventScreen() {
                 ))}
               </View>
             </ScrollView>
+          </FormField>
+
+          <FormField label="IMÁGENES (opcional)">
+            <ImagePickerField
+              images={form.images}
+              onChange={(urls) => setForm((f) => ({ ...f, images: urls }))}
+            />
           </FormField>
 
           <FormField label="AFORO MÁXIMO (opcional)">

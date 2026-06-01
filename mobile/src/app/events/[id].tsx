@@ -1,15 +1,17 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import {
-  ActivityIndicator, Alert, Image, KeyboardAvoidingView, Linking,
+  ActivityIndicator, Alert, FlatList, Image, KeyboardAvoidingView, Linking,
   Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View,
+  useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useAuth } from '@/context/AuthContext';
 import { Colors } from '@/constants/colors';
 import useWall from '@/hooks/useWall';
-import { CATEGORY_LABELS } from '@/constants/categories';
+import { CATEGORY_LABELS, CATEGORY_ICONS } from '@/constants/categories';
+import { Tag, Clock, MapPin } from 'lucide-react-native';
 import api from '@/services/api';
 
 type Event = {
@@ -32,12 +34,18 @@ type Event = {
 export default function EventDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuth();
+  const { width: screenWidth } = useWindowDimensions();
 
   const [event, setEvent]           = useState<Event | null>(null);
   const [loading, setLoading]       = useState(true);
   const [isEnrolled, setIsEnrolled] = useState(false);
   const [enrolling, setEnrolling]   = useState(false);
   const [imgIndex, setImgIndex]     = useState(0);
+
+  const viewabilityConfig = useRef({ viewAreaCoveragePercentThreshold: 50 });
+  const onViewableItemsChanged = useRef(({ viewableItems }: { viewableItems: Array<{ index: number | null }> }) => {
+    if (viewableItems[0]?.index != null) setImgIndex(viewableItems[0].index);
+  });
 
   const isCreator = user && event && user.id === event.creatorId;
   const isPast    = event ? new Date(event.date) < new Date() : false;
@@ -133,12 +141,29 @@ export default function EventDetailScreen() {
         {/* Galería de imágenes */}
         {event.images.length > 0 && (
           <View>
-            <Image source={{ uri: event.images[imgIndex] }} style={styles.image} resizeMode="cover" />
+            <FlatList
+              data={event.images}
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              keyExtractor={(_, i) => String(i)}
+              viewabilityConfig={viewabilityConfig.current}
+              onViewableItemsChanged={onViewableItemsChanged.current}
+              renderItem={({ item }) => (
+                <View style={{ width: screenWidth, height: 240, backgroundColor: Colors.surface }}>
+                  <Image source={{ uri: item }}
+                    style={StyleSheet.absoluteFillObject}
+                    resizeMode="cover" blurRadius={18} />
+                  <Image source={{ uri: item }}
+                    style={{ width: screenWidth, height: 240 }}
+                    resizeMode="contain" />
+                </View>
+              )}
+            />
             {event.images.length > 1 && (
               <View style={styles.dots}>
                 {event.images.map((_, i) => (
-                  <Pressable key={i} onPress={() => setImgIndex(i)}
-                    style={[styles.dot, i === imgIndex && styles.dotActive]} />
+                  <View key={i} style={[styles.dot, i === imgIndex && styles.dotActive]} />
                 ))}
               </View>
             )}
@@ -148,12 +173,23 @@ export default function EventDetailScreen() {
         <View style={styles.content}>
           {/* Cabecera */}
           <View style={styles.meta}>
-            <Text style={styles.category}>{CATEGORY_LABELS[event.category] ?? '📌 Otro'}</Text>
+            {(() => { const Icon = CATEGORY_ICONS[event.category] ?? Tag; return (
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                <Icon size={13} color={Colors.textSecondary} />
+                <Text style={styles.category}>{CATEGORY_LABELS[event.category] ?? 'Otro'}</Text>
+              </View>
+            ); })()}
             <Text style={styles.dateText}>{formattedDate}</Text>
           </View>
           <Text style={styles.title}>{event.title}</Text>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <Text style={styles.sub}>🕐 {formattedTime}  ·  📍 {event.location}</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexShrink: 1 }}>
+              <Clock size={13} color={Colors.textMuted} />
+              <Text style={styles.sub}>{formattedTime}</Text>
+              <Text style={styles.sub}>·</Text>
+              <MapPin size={13} color={Colors.textMuted} />
+              <Text style={styles.sub} numberOfLines={1}>{event.location}</Text>
+            </View>
             {event.latitude && event.longitude && (
               <Pressable
                 onPress={() => Linking.openURL(`https://maps.google.com/?q=${event.latitude},${event.longitude}`)}
@@ -458,7 +494,6 @@ const styles = StyleSheet.create({
   safe:      { flex: 1, backgroundColor: Colors.bg },
   center:    { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: Colors.bg },
   scroll:    { paddingBottom: 24 },
-  image:     { width: '100%', height: 240 },
   dots:      { flexDirection: 'row', justifyContent: 'center', gap: 6, marginTop: 8 },
   dot:       { width: 6, height: 6, borderRadius: 3, backgroundColor: Colors.border },
   dotActive: { backgroundColor: Colors.accent, width: 20 },

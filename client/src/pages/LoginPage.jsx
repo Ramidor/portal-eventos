@@ -44,13 +44,13 @@ export default function LoginPage() {
 
   return (
     <AuthLayout
-      headline={<>Organiza.<br />Conecta.<br /><span className="text-amber-400">Vive.</span></>}
+      headline={<>Organiza.<br />Conecta.<br /><span className="text-orange-400">Vive.</span></>}
       subtitle="Crea y descubre eventos. Cualquier usuario puede organizar y asistir."
     >
       <div className="w-full max-w-sm">
         <div className="mb-10">
-          <p className="text-stone-500 font-mono text-xs tracking-widest uppercase mb-2">Bienvenido de nuevo</p>
-          <h2 className="text-3xl font-serif text-stone-100">Iniciar sesión</h2>
+          <p className="text-zinc-500 font-mono text-xs tracking-widest uppercase mb-2">Bienvenido de nuevo</p>
+          <h2 className="text-3xl font-serif text-zinc-100">Iniciar sesión</h2>
         </div>
 
         {justVerified && (
@@ -61,32 +61,32 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-stone-400 text-xs font-mono tracking-widest uppercase mb-2">Email</label>
+            <label className="block text-zinc-400 text-xs font-mono tracking-widest uppercase mb-2">Email</label>
             <input type="email" name="email" value={form.email} onChange={handleChange} required placeholder="tu@email.com"
-              className="w-full bg-stone-900 border border-stone-700 text-stone-100 rounded-lg px-4 py-3 text-sm placeholder-stone-600 focus:outline-none focus:border-amber-400 transition-colors" />
+              className="w-full bg-zinc-900 border border-zinc-700 text-zinc-100 rounded-lg px-4 py-3 text-sm placeholder-zinc-600 focus:outline-none focus:border-orange-400 transition-colors" />
           </div>
           <div>
-            <label className="block text-stone-400 text-xs font-mono tracking-widest uppercase mb-2">Contraseña</label>
+            <label className="block text-zinc-400 text-xs font-mono tracking-widest uppercase mb-2">Contraseña</label>
             <input type="password" name="password" value={form.password} onChange={handleChange} required placeholder="••••••••"
-              className="w-full bg-stone-900 border border-stone-700 text-stone-100 rounded-lg px-4 py-3 text-sm placeholder-stone-600 focus:outline-none focus:border-amber-400 transition-colors" />
+              className="w-full bg-zinc-900 border border-zinc-700 text-zinc-100 rounded-lg px-4 py-3 text-sm placeholder-zinc-600 focus:outline-none focus:border-orange-400 transition-colors" />
           </div>
           {error && <p className="text-red-400 text-xs font-mono bg-red-950/30 border border-red-900 rounded-lg px-4 py-3">{error}</p>}
 
           <button type="submit" disabled={loading}
-            className="w-full bg-amber-400 hover:bg-amber-300 disabled:bg-stone-700 disabled:text-stone-500 text-stone-950 font-semibold py-3 rounded-lg text-sm transition-colors duration-200 cursor-pointer">
+            className="w-full bg-orange-400 hover:bg-orange-300 disabled:bg-zinc-700 disabled:text-zinc-500 text-zinc-950 font-semibold py-3 rounded-lg text-sm transition-colors duration-200 cursor-pointer">
             {loading ? "Entrando..." : "Entrar"}
           </button>
 
           <p className="text-center">
-            <Link to="/forgot-password" className="text-stone-500 hover:text-amber-400 font-mono text-xs transition-colors">
+            <Link to="/forgot-password" className="text-zinc-500 hover:text-orange-400 font-mono text-xs transition-colors">
               ¿Olvidaste tu contraseña?
             </Link>
           </p>
         </form>
 
-        <p className="mt-8 text-center text-stone-500 text-sm">
+        <p className="mt-8 text-center text-zinc-500 text-sm">
           ¿No tienes cuenta?{" "}
-          <Link to="/register" className="text-amber-400 hover:text-amber-300 transition-colors">Regístrate</Link>
+          <Link to="/register" className="text-orange-400 hover:text-orange-300 transition-colors">Regístrate</Link>
         </p>
       </div>
     </AuthLayout>

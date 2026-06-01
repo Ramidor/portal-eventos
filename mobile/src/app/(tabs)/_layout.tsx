@@ -1,11 +1,7 @@
 import { Tabs } from 'expo-router';
-import { Text } from 'react-native';
+import { CalendarDays, User, Settings } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
 import { useAuth } from '@/context/AuthContext';
-
-function TabIcon({ emoji, active }: { emoji: string; active: boolean }) {
-  return <Text style={{ fontSize: 20, opacity: active ? 1 : 0.5 }}>{emoji}</Text>;
-}
 
 export default function TabsLayout() {
   const { isAdmin } = useAuth();
@@ -22,17 +18,23 @@ export default function TabsLayout() {
     >
       <Tabs.Screen
         name="index"
-        options={{ title: 'Eventos', tabBarIcon: ({ focused }) => <TabIcon emoji="🗓️" active={focused} /> }}
+        options={{
+          title: 'Eventos',
+          tabBarIcon: ({ color, size }) => <CalendarDays size={size} color={color} />,
+        }}
       />
       <Tabs.Screen
         name="profile"
-        options={{ title: 'Perfil', tabBarIcon: ({ focused }) => <TabIcon emoji="👤" active={focused} /> }}
+        options={{
+          title: 'Perfil',
+          tabBarIcon: ({ color, size }) => <User size={size} color={color} />,
+        }}
       />
       <Tabs.Screen
         name="admin"
         options={{
           title: 'Admin',
-          tabBarIcon: ({ focused }) => <TabIcon emoji="⚙️" active={focused} />,
+          tabBarIcon: ({ color, size }) => <Settings size={size} color={color} />,
           href: isAdmin ? '/admin' : null,
         }}
       />

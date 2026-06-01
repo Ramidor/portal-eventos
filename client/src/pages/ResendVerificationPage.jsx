@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { RefreshCw } from "lucide-react";
 import api from "../services/api";
 
 export default function ResendVerificationPage() {
@@ -29,12 +30,12 @@ export default function ResendVerificationPage() {
   };
 
   return (
-    <div className="min-h-screen bg-stone-950 flex items-center justify-center p-8">
+    <div className="min-h-screen bg-zinc-950 flex items-center justify-center p-8">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
-          <div className="text-4xl mb-4">🔄</div>
-          <h1 className="text-2xl font-serif text-stone-100 mb-2">Reenviar código</h1>
-          <p className="text-stone-500 text-sm">Introduce tu email y te enviaremos un nuevo código numérico de 6 dígitos.</p>
+          <div className="flex justify-center mb-4"><RefreshCw size={40} className="text-orange-400" /></div>
+          <h1 className="text-2xl font-serif text-zinc-100 mb-2">Reenviar código</h1>
+          <p className="text-zinc-500 text-sm">Introduce tu email y te enviaremos un nuevo código numérico de 6 dígitos.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -44,18 +45,18 @@ export default function ResendVerificationPage() {
             onChange={(e) => setEmail(e.target.value)}
             required 
             placeholder="tu@email.com"
-            className="w-full bg-stone-900 border border-stone-700 text-stone-100 rounded-lg px-4 py-3 text-sm placeholder-stone-600 focus:outline-none focus:border-amber-400 transition-colors"
+            className="w-full bg-zinc-900 border border-zinc-700 text-zinc-100 rounded-lg px-4 py-3 text-sm placeholder-zinc-600 focus:outline-none focus:border-orange-400 transition-colors"
           />
           {error && <p className="text-red-400 text-xs font-mono bg-red-950/30 border border-red-900 rounded-lg px-4 py-3">{error}</p>}
           
           <button type="submit" disabled={loading || !email}
-            className="w-full bg-amber-400 hover:bg-amber-300 disabled:bg-stone-700 disabled:text-stone-500 text-stone-950 font-semibold py-3 rounded-lg text-sm transition-colors cursor-pointer">
+            className="w-full bg-orange-400 hover:bg-orange-300 disabled:bg-zinc-700 disabled:text-zinc-500 text-zinc-950 font-semibold py-3 rounded-lg text-sm transition-colors cursor-pointer">
             {loading ? "Enviando..." : "Enviar nuevo código"}
           </button>
         </form>
 
-        <p className="mt-6 text-center text-stone-500 text-sm">
-          <Link to="/login" className="text-amber-400 hover:text-amber-300 transition-colors">
+        <p className="mt-6 text-center text-zinc-500 text-sm">
+          <Link to="/login" className="text-orange-400 hover:text-orange-300 transition-colors">
             Volver al login
           </Link>
         </p>

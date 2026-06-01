@@ -1,12 +1,12 @@
 export const Colors = {
-  bg:        '#0c0a09', // stone-950
-  surface:   '#1c1917', // stone-900
-  border:    '#292524', // stone-800
-  textPrimary:   '#e7e5e4', // stone-100
-  textSecondary: '#a8a29e', // stone-400
-  textMuted:     '#57534e', // stone-600
-  accent:    '#fbbf24', // amber-400
-  accentDark:'#1c1917', // texto sobre amber
+  bg:        '#09090b', // slate-950
+  surface:   '#18181b', // slate-900
+  border:    '#27272a', // slate-800
+  textPrimary:   '#e4e4e7', // slate-200
+  textSecondary: '#a1a1aa', // slate-400
+  textMuted:     '#52525b', // slate-600
+  accent:    '#fb923c', // cyan-400
+  accentDark:'#18181b', // texto sobre cyan
   error:     '#f87171', // red-400
   errorBg:   '#1a0a0a',
 };

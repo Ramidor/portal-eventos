@@ -43,7 +43,7 @@ export default function EditEventPage() {
   if (!event) return (
     <PageLayout maxWidth="max-w-2xl">
       <div className="flex items-center justify-center h-64">
-        <span className="text-stone-500 font-mono text-sm animate-pulse">Cargando...</span>
+        <span className="text-zinc-500 font-mono text-sm animate-pulse">Cargando...</span>
       </div>
     </PageLayout>
   );
@@ -51,10 +51,10 @@ export default function EditEventPage() {
   return (
     <PageLayout maxWidth="max-w-2xl">
       <div className="mb-10">
-        <p className="text-stone-500 font-mono text-xs tracking-widest uppercase mb-2">Editar evento</p>
-        <h1 className="text-4xl font-serif text-stone-100 line-clamp-2">{event.title}</h1>
+        <p className="text-zinc-500 font-mono text-xs tracking-widest uppercase mb-2">Editar evento</p>
+        <h1 className="text-4xl font-serif text-zinc-100 line-clamp-2">{event.title}</h1>
       </div>
-      <div className="bg-stone-900 border border-stone-800 rounded-xl p-8">
+      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-8">
         <EventForm initialData={event} onSubmit={handleSubmit} loading={loading} error={submitError} submitLabel="Guardar cambios" />
       </div>
     </PageLayout>

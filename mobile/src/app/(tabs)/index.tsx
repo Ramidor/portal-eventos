@@ -6,8 +6,9 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Tag } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
-import { CATEGORY_LABELS, CATEGORIES } from '@/constants/categories';
+import { CATEGORY_LABELS, CATEGORY_ICONS, CATEGORIES } from '@/constants/categories';
 import api from '@/services/api';
 import { useAuth } from '@/context/AuthContext';
 
@@ -43,7 +44,7 @@ export default function EventsScreen() {
   }, [search, category]);
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
         <View>
           <Text style={styles.eyebrow}>PRÓXIMOS EVENTOS</Text>
@@ -67,19 +68,26 @@ export default function EventsScreen() {
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
+        style={styles.chipsScroll}
         contentContainerStyle={styles.chips}
       >
-        {[{ value: '', label: 'Todas' }, ...CATEGORIES].map((item) => (
-          <Pressable
-            key={item.value}
-            style={[styles.chip, category === item.value && styles.chipActive]}
-            onPress={() => { setCategory(item.value); }}
-          >
-            <Text style={[styles.chipText, category === item.value && styles.chipTextActive]}>
-              {item.label}
-            </Text>
-          </Pressable>
-        ))}
+        {[{ value: '', label: 'Todas' }, ...CATEGORIES].map((item) => {
+          const Icon = item.value ? (CATEGORY_ICONS[item.value] ?? Tag) : null;
+          const isActive = category === item.value;
+          const iconColor = isActive ? Colors.accentDark : Colors.textSecondary;
+          return (
+            <Pressable
+              key={item.value}
+              style={[styles.chip, isActive && styles.chipActive]}
+              onPress={() => setCategory(item.value)}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                {Icon && <Icon size={13} color={iconColor} />}
+                <Text style={[styles.chipText, isActive && styles.chipTextActive]}>{item.label}</Text>
+              </View>
+            </Pressable>
+          );
+        })}
       </ScrollView>
 
       {/* Lista */}
@@ -89,7 +97,8 @@ export default function EventsScreen() {
         <FlatList
           data={events}
           keyExtractor={(e) => String(e.id)}
-          contentContainerStyle={styles.list}
+          style={styles.list}
+          contentContainerStyle={styles.listContent}
           ListEmptyComponent={<Text style={styles.empty}>No hay eventos que coincidan.</Text>}
           renderItem={({ item }) => <EventCard event={item} />}
         />
@@ -114,7 +123,15 @@ function EventCard({ event }: { event: Event }) {
         <Text style={styles.cardTitle} numberOfLines={2}>{event.title}</Text>
         <Text style={styles.cardMeta}>{time} · {event.location}</Text>
         <View style={styles.cardFooter}>
-          <Text style={styles.cardCategory}>{CATEGORY_LABELS[event.category] ?? '📌 Otro'}</Text>
+          {(() => {
+            const Icon = CATEGORY_ICONS[event.category] ?? Tag;
+            return (
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                <Icon size={12} color={Colors.textSecondary} />
+                <Text style={styles.cardCategory}>{CATEGORY_LABELS[event.category] ?? 'Otro'}</Text>
+              </View>
+            );
+          })()}
           <Text style={styles.cardEnrollments}>{event._count.enrollments} inscritos</Text>
         </View>
       </View>
@@ -135,12 +152,14 @@ const styles = StyleSheet.create({
     borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12,
     color: Colors.textPrimary, fontSize: 14,
   },
-  chips:   { flexDirection: 'row', paddingHorizontal: 20, paddingRight: 20, gap: 8, marginBottom: 14 },
+  chipsScroll: { flexGrow: 0, flexShrink: 0, marginBottom: 14 },
+  chips:   { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, gap: 8 },
   chip:    { backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, borderRadius: 20, paddingHorizontal: 16, paddingVertical: 8 },
   chipActive: { backgroundColor: Colors.accent, borderColor: Colors.accent },
   chipText:   { color: Colors.textSecondary, fontSize: 13 },
   chipTextActive: { color: Colors.accentDark, fontWeight: '600' },
-  list:  { paddingHorizontal: 20, gap: 12, paddingBottom: 20, flexGrow: 1 },
+  list:        { flex: 1, paddingHorizontal: 20 },
+  listContent: { gap: 12, paddingBottom: 20 },
   empty: { color: Colors.textMuted, textAlign: 'center', marginTop: 40 },
   card: {
     backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border,

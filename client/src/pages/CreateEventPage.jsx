@@ -25,10 +25,10 @@ export default function CreateEventPage() {
   return (
     <PageLayout maxWidth="max-w-2xl">
       <div className="mb-10">
-        <p className="text-stone-500 font-mono text-xs tracking-widest uppercase mb-2">Nuevo evento</p>
-        <h1 className="text-4xl font-serif text-stone-100">Crea tu evento</h1>
+        <p className="text-zinc-500 font-mono text-xs tracking-widest uppercase mb-2">Nuevo evento</p>
+        <h1 className="text-4xl font-serif text-zinc-100">Crea tu evento</h1>
       </div>
-      <div className="bg-stone-900 border border-stone-800 rounded-xl p-8">
+      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-8">
         <EventForm onSubmit={handleSubmit} loading={loading} error={error} submitLabel="Crear evento" />
       </div>
     </PageLayout>

@@ -4,10 +4,10 @@ const options = {
   definition: {
     openapi: "3.0.0",
     info: {
-      title: "Portal de Eventos — API",
+      title: "Alphavents — API",
       version: "1.0.0",
       description:
-        "API REST del Portal de Eventos. Autenticación mediante JWT Bearer token.\n\n" +
+        "API REST de Alphavents. Autenticación mediante JWT Bearer token.\n\n" +
         "**Flujo de autenticación:**\n" +
         "1. `POST /auth/register` → se envía un código OTP al email\n" +
         "2. `POST /auth/verify-email` → devuelve el JWT\n" +

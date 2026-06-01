@@ -4,6 +4,7 @@ import PageLayout from "../components/PageLayout";
 import EventCard from "../components/EventCard";
 import api from "../services/api";
 
+import { MapPin } from "lucide-react";
 import { CATEGORIES as BASE_CATEGORIES } from "../constants/categories";
 
 const CATEGORIES = [{ value: "", label: "Todas las categorías" }, ...BASE_CATEGORIES];
@@ -95,10 +96,10 @@ export default function EventsPage() {
   return (
     <PageLayout>
         <div className="mb-10">
-          <p className="text-stone-500 font-mono text-xs tracking-widest uppercase mb-2">
+          <p className="text-zinc-500 font-mono text-xs tracking-widest uppercase mb-2">
             Próximos eventos
           </p>
-          <h1 className="text-4xl font-serif text-stone-100">Descubre qué está pasando</h1>
+          <h1 className="text-4xl font-serif text-zinc-100">Descubre qué está pasando</h1>
         </div>
 
         {/* Filtros */}
@@ -106,11 +107,11 @@ export default function EventsPage() {
           <input
             type="text" value={search} onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar por nombre..."
-            className="flex-1 min-w-[200px] bg-stone-900 border border-stone-700 text-stone-100 rounded-lg px-4 py-3 text-sm placeholder-stone-600 focus:outline-none focus:border-amber-400 transition-colors"
+            className="flex-1 min-w-[200px] bg-zinc-900 border border-zinc-700 text-zinc-100 rounded-lg px-4 py-3 text-sm placeholder-zinc-600 focus:outline-none focus:border-orange-400 transition-colors"
           />
           <select
             value={category} onChange={(e) => { setCategory(e.target.value); setPage(1); }}
-            className="bg-stone-900 border border-stone-700 text-stone-100 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-amber-400 transition-colors"
+            className="bg-zinc-900 border border-zinc-700 text-zinc-100 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-orange-400 transition-colors"
           >
             {CATEGORIES.map((c) => (
               <option key={c.value} value={c.value}>{c.label}</option>
@@ -119,22 +120,22 @@ export default function EventsPage() {
           <input
             type="text" value={location} onChange={(e) => { setLocation(e.target.value); setPage(1); }}
             placeholder="Filtrar por ciudad..."
-            className="bg-stone-900 border border-stone-700 text-stone-100 rounded-lg px-4 py-3 text-sm placeholder-stone-600 focus:outline-none focus:border-amber-400 transition-colors w-48"
+            className="bg-zinc-900 border border-zinc-700 text-zinc-100 rounded-lg px-4 py-3 text-sm placeholder-zinc-600 focus:outline-none focus:border-orange-400 transition-colors w-48"
           />
           <button
             onClick={handleLocationFilter}
             className={`px-4 py-3 rounded-lg text-sm font-mono transition-colors cursor-pointer border ${
               sortByDistance
-                ? "bg-amber-400 text-stone-950 border-amber-400"
-                : "bg-stone-900 border-stone-700 text-stone-400 hover:border-amber-400 hover:text-amber-400"
+                ? "bg-orange-400 text-zinc-950 border-orange-400"
+                : "bg-zinc-900 border-zinc-700 text-zinc-400 hover:border-orange-400 hover:text-orange-400"
             }`}
           >
-            📍 Cerca de mí
+            <span className="inline-flex items-center gap-1.5"><MapPin size={14} />Cerca de mí</span>
           </button>
         </div>
 
         {loading && (
-          <div className="flex items-center gap-3 text-stone-500 font-mono text-sm">
+          <div className="flex items-center gap-3 text-zinc-500 font-mono text-sm">
             <span className="animate-pulse">●</span> Cargando eventos...
           </div>
         )}
@@ -145,7 +146,7 @@ export default function EventsPage() {
         )}
         {!loading && !error && displayed.length === 0 && (
           <div className="text-center py-20">
-            <p className="text-stone-600 font-mono text-sm">No hay eventos que coincidan con los filtros.</p>
+            <p className="text-zinc-600 font-mono text-sm">No hay eventos que coincidan con los filtros.</p>
           </div>
         )}
         {!loading && !error && displayed.length > 0 && (
@@ -164,17 +165,17 @@ export default function EventsPage() {
                 <button
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={page <= 1}
-                  className="font-mono text-xs px-4 py-2 rounded-lg border border-stone-700 text-stone-400 hover:border-amber-400 hover:text-amber-400 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="font-mono text-xs px-4 py-2 rounded-lg border border-zinc-700 text-zinc-400 hover:border-orange-400 hover:text-orange-400 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   ← Anterior
                 </button>
-                <span className="text-stone-500 font-mono text-xs">
+                <span className="text-zinc-500 font-mono text-xs">
                   Página {page} de {totalPages} · {total} eventos
                 </span>
                 <button
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                   disabled={page >= totalPages}
-                  className="font-mono text-xs px-4 py-2 rounded-lg border border-stone-700 text-stone-400 hover:border-amber-400 hover:text-amber-400 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="font-mono text-xs px-4 py-2 rounded-lg border border-zinc-700 text-zinc-400 hover:border-orange-400 hover:text-orange-400 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   Siguiente →
                 </button>

@@ -4,7 +4,8 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Colors } from '@/constants/colors';
-import { CATEGORY_LABELS } from '@/constants/categories';
+import { CATEGORY_LABELS, CATEGORY_ICONS } from '@/constants/categories';
+import { Tag } from 'lucide-react-native';
 import api from '@/services/api';
 
 type EventItem = { id: number; title: string; date: string; location: string; category: string; _count: { enrollments: number } };
@@ -114,7 +115,10 @@ function EventRow({ event, past = false }: { event: EventItem; past?: boolean })
     <Pressable style={styles.eventRow} onPress={() => router.push(`/events/${event.id}` as never)}>
       <View style={{ flex: 1 }}>
         <Text style={[styles.eventTitle, past && styles.eventTitlePast]} numberOfLines={1}>{event.title}</Text>
-        <Text style={styles.eventMeta}>{CATEGORY_LABELS[event.category] || '📌 Otro'} · {date}</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+          {(() => { const Icon = CATEGORY_ICONS[event.category] ?? Tag; return <Icon size={11} color={Colors.textMuted} />; })()}
+          <Text style={styles.eventMeta}>{CATEGORY_LABELS[event.category] || 'Otro'} · {date}</Text>
+        </View>
       </View>
       <Text style={styles.enrollments}>{event._count.enrollments} inscritos</Text>
     </Pressable>

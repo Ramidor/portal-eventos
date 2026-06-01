@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
+import { MailOpen } from "lucide-react";
 
 export default function VerifyEmailPage() {
   const navigate  = useNavigate();
@@ -80,15 +81,15 @@ export default function VerifyEmailPage() {
   };
 
   return (
-    <div className="min-h-screen bg-stone-950 flex items-center justify-center p-8">
+    <div className="min-h-screen bg-zinc-950 flex items-center justify-center p-8">
       <div className="w-full max-w-sm">
 
         <div className="text-center mb-10">
-          <div className="text-5xl mb-4">📬</div>
-          <p className="text-stone-500 font-mono text-xs tracking-widest uppercase mb-2">Verificación</p>
-          <h1 className="text-3xl font-serif text-stone-100 mb-3">Revisa tu email</h1>
-          <p className="text-stone-400 text-sm">
-            Hemos enviado un código de 6 dígitos a <span className="text-stone-200">{email || "tu email"}</span>
+          <div className="flex justify-center mb-4"><MailOpen size={48} className="text-orange-400" /></div>
+          <p className="text-zinc-500 font-mono text-xs tracking-widest uppercase mb-2">Verificación</p>
+          <h1 className="text-3xl font-serif text-zinc-100 mb-3">Revisa tu email</h1>
+          <p className="text-zinc-400 text-sm">
+            Hemos enviado un código de 6 dígitos a <span className="text-zinc-200">{email || "tu email"}</span>
           </p>
         </div>
 
@@ -97,15 +98,15 @@ export default function VerifyEmailPage() {
           {/* Input del email si no vino por state */}
           {!emailFromState && (
             <div>
-              <label className="block text-stone-400 text-xs font-mono tracking-widest uppercase mb-2">Email</label>
+              <label className="block text-zinc-400 text-xs font-mono tracking-widest uppercase mb-2">Email</label>
               <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="tu@email.com"
-                className="w-full bg-stone-900 border border-stone-700 text-stone-100 rounded-lg px-4 py-3 text-sm placeholder-stone-600 focus:outline-none focus:border-amber-400 transition-colors" />
+                className="w-full bg-zinc-900 border border-zinc-700 text-zinc-100 rounded-lg px-4 py-3 text-sm placeholder-zinc-600 focus:outline-none focus:border-orange-400 transition-colors" />
             </div>
           )}
 
           {/* Inputs OTP */}
           <div>
-            <label className="block text-stone-400 text-xs font-mono tracking-widest uppercase mb-4 text-center">
+            <label className="block text-zinc-400 text-xs font-mono tracking-widest uppercase mb-4 text-center">
               Código de verificación
             </label>
             <div className="flex gap-3 justify-center" onPaste={handlePaste}>
@@ -116,7 +117,7 @@ export default function VerifyEmailPage() {
                   type="text" inputMode="numeric" maxLength={1} value={digit}
                   onChange={(e) => handleCodeChange(i, e.target.value)}
                   onKeyDown={(e) => handleKeyDown(i, e)}
-                  className="w-12 h-14 text-center text-xl font-mono font-bold bg-stone-900 border border-stone-700 text-stone-100 rounded-lg focus:outline-none focus:border-amber-400 transition-colors"
+                  className="w-12 h-14 text-center text-xl font-mono font-bold bg-zinc-900 border border-zinc-700 text-zinc-100 rounded-lg focus:outline-none focus:border-orange-400 transition-colors"
                 />
               ))}
             </div>
@@ -132,18 +133,18 @@ export default function VerifyEmailPage() {
           )}
 
           <button type="submit" disabled={loading || code.join("").length < 6}
-            className="w-full bg-amber-400 hover:bg-amber-300 disabled:bg-stone-700 disabled:text-stone-500 text-stone-950 font-semibold py-3 rounded-lg text-sm transition-colors cursor-pointer">
+            className="w-full bg-orange-400 hover:bg-orange-300 disabled:bg-zinc-700 disabled:text-zinc-500 text-zinc-950 font-semibold py-3 rounded-lg text-sm transition-colors cursor-pointer">
             {loading ? "Verificando..." : "Verificar cuenta"}
           </button>
         </form>
 
         <div className="mt-6 text-center space-y-3">
           <button onClick={handleResend} disabled={resending}
-            className="text-stone-500 hover:text-amber-400 font-mono text-xs transition-colors cursor-pointer disabled:opacity-50">
+            className="text-zinc-500 hover:text-orange-400 font-mono text-xs transition-colors cursor-pointer disabled:opacity-50">
             {resending ? "Enviando..." : "¿No recibiste el código? Reenviar"}
           </button>
           <div>
-            <Link to="/login" className="text-stone-600 hover:text-stone-400 font-mono text-xs transition-colors">
+            <Link to="/login" className="text-zinc-600 hover:text-zinc-400 font-mono text-xs transition-colors">
               ← Volver al login
             </Link>
           </div>

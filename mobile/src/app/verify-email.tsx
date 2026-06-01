@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/context/AuthContext';
 import { Colors } from '@/constants/colors';
 import api from '@/services/api';
+import { MailOpen } from 'lucide-react-native';
 
 export default function VerifyEmailScreen() {
   const { login } = useAuth();
@@ -56,7 +57,7 @@ export default function VerifyEmailScreen() {
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.container}>
-        <Text style={styles.emoji}>📬</Text>
+        <MailOpen size={48} color={Colors.accent} style={{ marginBottom: 4 }} />
         <Text style={styles.title}>Revisa tu email</Text>
         <Text style={styles.subtitle}>
           Código enviado a <Text style={{ color: Colors.textPrimary }}>{email}</Text>
@@ -103,7 +104,6 @@ export default function VerifyEmailScreen() {
 const styles = StyleSheet.create({
   safe:       { flex: 1, backgroundColor: Colors.bg },
   container:  { flex: 1, padding: 24, alignItems: 'center', justifyContent: 'center', gap: 16 },
-  emoji:      { fontSize: 48 },
   title:      { color: Colors.textPrimary, fontSize: 26, fontWeight: '700' },
   subtitle:   { color: Colors.textSecondary, fontSize: 14, textAlign: 'center' },
   otpRow:     { flexDirection: 'row', gap: 10, marginVertical: 8 },

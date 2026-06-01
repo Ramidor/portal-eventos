@@ -20,7 +20,7 @@ const EditEventPage   = lazy(() => import("./pages/EditEventPage"));
 
 export default function App() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-stone-950" />}>
+    <Suspense fallback={<div className="min-h-screen bg-zinc-950" />}>
     <Routes>
       {/* Públicas */}
       <Route path="/login"                element={<LoginPage />} />

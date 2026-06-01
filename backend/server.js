@@ -20,17 +20,28 @@ if (missingEnv.length) {
 const app = express();
 const server = http.createServer(app); // Socket.io necesita el server HTTP nativo
 
-const io = new Server(server, {
-  cors: {
-    origin: process.env.CLIENT_URL,
-    methods: ["GET", "POST"],
+const ALLOWED_ORIGINS = [
+  process.env.CLIENT_URL,
+  "http://localhost:8081",  // Expo web dev
+].filter(Boolean);
+
+const corsOptions = {
+  origin: (origin, cb) => {
+    if (!origin || ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
+    cb(new Error("CORS: origen no permitido"));
   },
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+};
+
+const io = new Server(server, {
+  cors: { origin: ALLOWED_ORIGINS, methods: ["GET", "POST"] },
 });
 
 // ── Middlewares REST ───────────────────────────────────────────────────────────
 app.set("trust proxy", 1); // Railway usa proxy inverso
 app.use(helmet());
-app.use(cors({ origin: process.env.CLIENT_URL }));
+app.use(cors(corsOptions));
 app.use(express.json({ limit: "10kb" }));
 
 const { authLimiter } = require("./src/middlewares/rateLimiter.middleware");
@@ -41,7 +52,7 @@ app.get("/", (req, res) => res.send("API funcionando 🚀"));
 const swaggerUi   = require("swagger-ui-express");
 const swaggerSpec = require("./src/config/swagger");
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
-  customSiteTitle: "Portal de Eventos — API Docs",
+  customSiteTitle: "Alphavents — API Docs",
 }));
 
 // ── Rutas REST ─────────────────────────────────────────────────────────────────

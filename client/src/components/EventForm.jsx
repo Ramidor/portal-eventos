@@ -155,24 +155,24 @@ export default function EventForm({ initialData = {}, onSubmit, loading, error, 
 
       {/* Título */}
       <div>
-        <label className="block text-stone-400 text-xs font-mono tracking-widest uppercase mb-2">
-          Título <span className="text-amber-400">*</span>
+        <label className="block text-zinc-400 text-xs font-mono tracking-widest uppercase mb-2">
+          Título <span className="text-orange-400">*</span>
         </label>
         <input
           type="text" name="title" value={form.title} onChange={handleChange} required
           placeholder="Nombre del evento"
-          className="w-full bg-stone-900 border border-stone-700 text-stone-100 rounded-lg px-4 py-3 text-sm placeholder-stone-600 focus:outline-none focus:border-amber-400 transition-colors"
+          className="w-full bg-zinc-900 border border-zinc-700 text-zinc-100 rounded-lg px-4 py-3 text-sm placeholder-zinc-600 focus:outline-none focus:border-orange-400 transition-colors"
         />
       </div>
 
       {/* Categoría */}
       <div>
-        <label className="block text-stone-400 text-xs font-mono tracking-widest uppercase mb-2">
-          Categoría <span className="text-amber-400">*</span>
+        <label className="block text-zinc-400 text-xs font-mono tracking-widest uppercase mb-2">
+          Categoría <span className="text-orange-400">*</span>
         </label>
         <select
           name="category" value={form.category} onChange={handleChange}
-          className="w-full bg-stone-900 border border-stone-700 text-stone-100 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-amber-400 transition-colors"
+          className="w-full bg-zinc-900 border border-zinc-700 text-zinc-100 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-orange-400 transition-colors"
         >
           {CATEGORIES.map((c) => (
             <option key={c.value} value={c.value}>{c.label}</option>
@@ -182,32 +182,32 @@ export default function EventForm({ initialData = {}, onSubmit, loading, error, 
 
       {/* Descripción */}
       <div>
-        <label className="block text-stone-400 text-xs font-mono tracking-widest uppercase mb-2">
+        <label className="block text-zinc-400 text-xs font-mono tracking-widest uppercase mb-2">
           Descripción
         </label>
         <textarea
           name="description" value={form.description} onChange={handleChange} rows={4}
           placeholder="Describe el evento..."
-          className="w-full bg-stone-900 border border-stone-700 text-stone-100 rounded-lg px-4 py-3 text-sm placeholder-stone-600 focus:outline-none focus:border-amber-400 transition-colors resize-none"
+          className="w-full bg-zinc-900 border border-zinc-700 text-zinc-100 rounded-lg px-4 py-3 text-sm placeholder-zinc-600 focus:outline-none focus:border-orange-400 transition-colors resize-none"
         />
       </div>
 
       {/* Fecha */}
       <div>
-        <label className="block text-stone-400 text-xs font-mono tracking-widest uppercase mb-2">
-          Fecha y hora <span className="text-amber-400">*</span>
+        <label className="block text-zinc-400 text-xs font-mono tracking-widest uppercase mb-2">
+          Fecha y hora <span className="text-orange-400">*</span>
         </label>
         <input
           type="datetime-local" name="date" value={form.date} onChange={handleChange}
           required min={minDateStr}
-          className="w-full bg-stone-900 border border-stone-700 text-stone-100 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-amber-400 transition-colors [color-scheme:dark]"
+          className="w-full bg-zinc-900 border border-zinc-700 text-zinc-100 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-orange-400 transition-colors [color-scheme:dark]"
         />
       </div>
 
       {/* Ubicación con mapa */}
       <div>
-        <label className="block text-stone-400 text-xs font-mono tracking-widest uppercase mb-2">
-          Ubicación <span className="text-amber-400">*</span>
+        <label className="block text-zinc-400 text-xs font-mono tracking-widest uppercase mb-2">
+          Ubicación <span className="text-orange-400">*</span>
         </label>
 
         {/* Buscador de dirección */}
@@ -217,11 +217,11 @@ export default function EventForm({ initialData = {}, onSubmit, loading, error, 
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleSearch())}
             placeholder="Busca una dirección o lugar..."
-            className="flex-1 bg-stone-900 border border-stone-700 text-stone-100 rounded-lg px-4 py-3 text-sm placeholder-stone-600 focus:outline-none focus:border-amber-400 transition-colors"
+            className="flex-1 bg-zinc-900 border border-zinc-700 text-zinc-100 rounded-lg px-4 py-3 text-sm placeholder-zinc-600 focus:outline-none focus:border-orange-400 transition-colors"
           />
           <button
             type="button" onClick={handleSearch} disabled={searching}
-            className="bg-stone-700 hover:bg-stone-600 text-stone-100 px-4 py-3 rounded-lg text-sm transition-colors cursor-pointer disabled:opacity-50"
+            className="bg-zinc-700 hover:bg-zinc-600 text-zinc-100 px-4 py-3 rounded-lg text-sm transition-colors cursor-pointer disabled:opacity-50"
           >
             {searching ? "..." : "Buscar"}
           </button>
@@ -235,11 +235,11 @@ export default function EventForm({ initialData = {}, onSubmit, loading, error, 
         <input
           type="text" name="location" value={form.location} onChange={handleChange} required
           placeholder={form.location ? "Nombre del lugar" : "Nombre del lugar (busca arriba o haz clic en el mapa)"}
-          className="w-full bg-stone-900 border border-stone-700 text-stone-100 rounded-lg px-4 py-3 text-sm placeholder-stone-600 focus:outline-none focus:border-amber-400 transition-colors mb-3"
+          className="w-full bg-zinc-900 border border-zinc-700 text-zinc-100 rounded-lg px-4 py-3 text-sm placeholder-zinc-600 focus:outline-none focus:border-orange-400 transition-colors mb-3"
         />
 
         {/* Mapa */}
-        <div className="rounded-xl overflow-hidden border border-stone-700 h-64">
+        <div className="rounded-xl overflow-hidden border border-zinc-700 h-64">
           <MapContainer
             center={mapCenter} zoom={13} style={{ height: "100%", width: "100%" }}
             ref={mapRef}
@@ -254,16 +254,16 @@ export default function EventForm({ initialData = {}, onSubmit, loading, error, 
             )}
           </MapContainer>
         </div>
-        <p className="text-stone-600 text-xs font-mono mt-1">
+        <p className="text-zinc-600 text-xs font-mono mt-1">
           Haz clic en el mapa para ajustar la ubicación exacta
         </p>
       </div>
 
       {/* Imágenes */}
       <div>
-        <label className="block text-stone-400 text-xs font-mono tracking-widest uppercase mb-2">
+        <label className="block text-zinc-400 text-xs font-mono tracking-widest uppercase mb-2">
           Imágenes
-          <span className="text-stone-600 normal-case font-sans tracking-normal ml-1">
+          <span className="text-zinc-600 normal-case font-sans tracking-normal ml-1">
             — {images.length}/{MAX_IMAGES} · máx. 5 MB por imagen
           </span>
         </label>
@@ -275,17 +275,17 @@ export default function EventForm({ initialData = {}, onSubmit, loading, error, 
               <div key={i} className="relative group">
                 <img
                   src={url} alt=""
-                  className="w-full h-24 object-cover rounded-lg border border-stone-700"
+                  className="w-full h-24 object-cover rounded-lg border border-zinc-700"
                 />
                 <button
                   type="button"
                   onClick={() => removeImage(i)}
-                  className="absolute top-1 right-1 bg-stone-950/80 text-stone-400 hover:text-red-400 rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                  className="absolute top-1 right-1 bg-zinc-950/80 text-zinc-400 hover:text-red-400 rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
                 >
                   ✕
                 </button>
                 {i === 0 && (
-                  <span className="absolute bottom-1 left-1 bg-amber-400/90 text-stone-950 text-[10px] font-mono px-1.5 py-0.5 rounded">
+                  <span className="absolute bottom-1 left-1 bg-orange-400/90 text-zinc-950 text-[10px] font-mono px-1.5 py-0.5 rounded">
                     portada
                   </span>
                 )}
@@ -296,7 +296,7 @@ export default function EventForm({ initialData = {}, onSubmit, loading, error, 
 
         {/* Botón añadir */}
         {images.length < MAX_IMAGES && (
-          <label className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg border border-dashed border-stone-700 text-stone-400 hover:border-amber-400 hover:text-amber-400 transition-colors text-sm ${uploading ? "opacity-50 pointer-events-none" : "cursor-pointer"}`}>
+          <label className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg border border-dashed border-zinc-700 text-zinc-400 hover:border-orange-400 hover:text-orange-400 transition-colors text-sm ${uploading ? "opacity-50 pointer-events-none" : "cursor-pointer"}`}>
             <input
               type="file"
               accept="image/jpeg,image/png,image/webp,image/gif"
@@ -320,13 +320,13 @@ export default function EventForm({ initialData = {}, onSubmit, loading, error, 
 
       {/* Aforo máximo */}
       <div>
-        <label className="block text-stone-400 text-xs font-mono tracking-widest uppercase mb-2">
-          Aforo máximo <span className="text-stone-600 normal-case font-sans tracking-normal">— opcional</span>
+        <label className="block text-zinc-400 text-xs font-mono tracking-widest uppercase mb-2">
+          Aforo máximo <span className="text-zinc-600 normal-case font-sans tracking-normal">— opcional</span>
         </label>
         <input
           type="number" name="maxAttendees" value={form.maxAttendees} onChange={handleChange}
           min="1" placeholder="Sin límite"
-          className="w-full bg-stone-900 border border-stone-700 text-stone-100 rounded-lg px-4 py-3 text-sm placeholder-stone-600 focus:outline-none focus:border-amber-400 transition-colors"
+          className="w-full bg-zinc-900 border border-zinc-700 text-zinc-100 rounded-lg px-4 py-3 text-sm placeholder-zinc-600 focus:outline-none focus:border-orange-400 transition-colors"
         />
       </div>
 
@@ -338,7 +338,7 @@ export default function EventForm({ initialData = {}, onSubmit, loading, error, 
 
       <button
         type="submit" disabled={loading}
-        className="w-full bg-amber-400 hover:bg-amber-300 disabled:bg-stone-700 disabled:text-stone-500 text-stone-950 font-semibold py-3 rounded-lg text-sm transition-colors duration-200 cursor-pointer"
+        className="w-full bg-orange-400 hover:bg-orange-300 disabled:bg-zinc-700 disabled:text-zinc-500 text-zinc-950 font-semibold py-3 rounded-lg text-sm transition-colors duration-200 cursor-pointer"
       >
         {loading ? "Guardando..." : submitLabel}
       </button>

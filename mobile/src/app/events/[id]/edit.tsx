@@ -7,6 +7,7 @@ import { Colors } from '@/constants/colors';
 import { CATEGORIES } from '@/constants/categories';
 import DatePickerField from '@/components/DatePickerField';
 import FormField from '@/components/FormField';
+import ImagePickerField from '@/components/ImagePickerField';
 import LocationPicker from '@/components/LocationPicker';
 import api from '@/services/api';
 
@@ -14,6 +15,7 @@ type FormState = {
   title: string; description: string; location: string;
   latitude: number | null; longitude: number | null;
   category: string; maxAttendees: string;
+  images: string[];
 };
 
 export default function EditEventScreen() {
@@ -22,6 +24,7 @@ export default function EditEventScreen() {
     title: '', description: '', location: '',
     latitude: null, longitude: null,
     category: 'OTRO', maxAttendees: '',
+    images: [],
   });
   const [date, setDate]       = useState<Date | null>(null);
   const [loading, setLoading] = useState(true);
@@ -35,6 +38,7 @@ export default function EditEventScreen() {
         location: data.location ?? '', latitude: data.latitude ?? null,
         longitude: data.longitude ?? null, category: data.category ?? 'OTRO',
         maxAttendees: data.maxAttendees ? String(data.maxAttendees) : '',
+        images: data.images ?? [],
       });
       setDate(new Date(data.date));
     }).finally(() => setLoading(false));
@@ -101,6 +105,13 @@ export default function EditEventScreen() {
                 ))}
               </View>
             </ScrollView>
+          </FormField>
+
+          <FormField label="IMÁGENES (opcional)">
+            <ImagePickerField
+              images={form.images}
+              onChange={(urls) => setForm((f) => ({ ...f, images: urls }))}
+            />
           </FormField>
 
           <FormField label="AFORO MÁXIMO (opcional)">

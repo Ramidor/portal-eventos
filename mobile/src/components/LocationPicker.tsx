@@ -3,6 +3,7 @@ import {
   ActivityIndicator, FlatList, Pressable,
   StyleSheet, Text, TextInput, View,
 } from 'react-native';
+import { MapPin } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
 
 type Result = { display_name: string; lat: string; lon: string };
@@ -88,7 +89,10 @@ export default function LocationPicker({ value, onSelect }: Props) {
       )}
 
       {selected && value && (
-        <Text style={styles.selectedHint}>📍 {value.split(',').slice(0, 3).join(',')}</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+          <MapPin size={13} color={Colors.textMuted} />
+          <Text style={styles.selectedHint}>{value.split(',').slice(0, 3).join(',')}</Text>
+        </View>
       )}
     </View>
   );

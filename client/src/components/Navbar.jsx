@@ -11,15 +11,15 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="border-b border-stone-800 bg-stone-950 px-6 py-4">
+    <nav className="border-b border-zinc-800 bg-zinc-950 px-6 py-4">
       <div className="max-w-6xl mx-auto flex items-center justify-between">
 
         {/* Logo */}
         <Link
           to="/events"
-          className="text-amber-400 font-mono text-sm tracking-[0.3em] uppercase hover:text-amber-300 transition-colors"
+          className="text-orange-400 font-mono text-sm tracking-[0.3em] uppercase hover:text-orange-300 transition-colors"
         >
-          Portal de Eventos
+          Alphavents
         </Link>
 
         {/* Acciones */}
@@ -28,27 +28,27 @@ export default function Navbar() {
             <>
               <Link
                 to="/events/new"
-                className="bg-amber-400 hover:bg-amber-300 text-stone-950 font-semibold text-sm px-4 py-2 rounded-lg transition-colors"
+                className="bg-orange-400 hover:bg-orange-300 text-zinc-950 font-semibold text-sm px-4 py-2 rounded-lg transition-colors"
               >
                 + Crear evento
               </Link>
               <Link
                 to="/profile"
-                className="text-stone-400 hover:text-stone-100 text-sm transition-colors"
+                className="text-zinc-400 hover:text-zinc-100 text-sm transition-colors"
               >
                 {user.name}
               </Link>
               {isAdmin && (
                 <Link
                   to="/admin"
-                  className="text-stone-500 hover:text-amber-400 font-mono text-xs transition-colors"
+                  className="text-zinc-500 hover:text-orange-400 font-mono text-xs transition-colors"
                 >
                   Admin
                 </Link>
               )}
               <button
                 onClick={handleLogout}
-                className="text-stone-600 hover:text-red-400 font-mono text-sm transition-colors cursor-pointer"
+                className="text-zinc-600 hover:text-red-400 font-mono text-sm transition-colors cursor-pointer"
               >
                 Salir
               </button>
@@ -57,13 +57,13 @@ export default function Navbar() {
             <>
               <Link
                 to="/login"
-                className="text-stone-400 hover:text-stone-100 text-sm transition-colors"
+                className="text-zinc-400 hover:text-zinc-100 text-sm transition-colors"
               >
                 Iniciar sesión
               </Link>
               <Link
                 to="/register"
-                className="bg-amber-400 hover:bg-amber-300 text-stone-950 font-semibold text-sm px-4 py-2 rounded-lg transition-colors"
+                className="bg-orange-400 hover:bg-orange-300 text-zinc-950 font-semibold text-sm px-4 py-2 rounded-lg transition-colors"
               >
                 Registrarse
               </Link>
