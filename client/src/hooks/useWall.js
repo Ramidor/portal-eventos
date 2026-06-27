@@ -17,7 +17,6 @@ export default function useWall(eventId, token) {
     const socket = io(import.meta.env.VITE_API_URL || "http://localhost:3000", {
       auth: { token },
     });
-    
 
     socketRef.current = socket;
 
@@ -54,9 +53,12 @@ export default function useWall(eventId, token) {
     };
   }, [eventId, token]);
 
-  const sendMessage = useCallback((content) => {
-    socketRef.current?.emit("sendMessage", { eventId, content });
-  }, [eventId]);
+  const sendMessage = useCallback(
+    (content) => {
+      socketRef.current?.emit("sendMessage", { eventId, content });
+    },
+    [eventId],
+  );
 
   return { messages, connected, error, sendMessage };
 }

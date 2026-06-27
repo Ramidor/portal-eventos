@@ -13,7 +13,6 @@ export default function Navbar() {
   return (
     <nav className="border-b border-zinc-800 bg-zinc-950 px-6 py-4">
       <div className="max-w-6xl mx-auto flex items-center justify-between">
-
         {/* Logo */}
         <Link
           to="/events"
@@ -70,7 +69,6 @@ export default function Navbar() {
             </>
           )}
         </div>
-
       </div>
     </nav>
   );

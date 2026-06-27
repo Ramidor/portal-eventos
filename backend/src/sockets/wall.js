@@ -21,32 +21,34 @@ const prisma = require("../config/prisma");
 module.exports = (io) => {
   // ── Middleware de autenticación Socket.io ──────────────────────────────────
   io.use((socket, next) => {
-  const token = socket.handshake.auth?.token;
+    const token = socket.handshake.auth?.token;
 
-  if (!token) return next(new Error("Token no proporcionado"));
+    if (!token) return next(new Error("Token no proporcionado"));
 
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    socket.user = decoded;
-    next();
-  } catch (err) {
-    next(new Error("Token no válido"));
-  }
-});
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      socket.user = decoded;
+      next();
+    } catch (err) {
+      next(new Error("Token no válido"));
+    }
+  });
 
   // ── Conexión ───────────────────────────────────────────────────────────────
   io.on("connection", (socket) => {
-  if (!socket.user) {
-    socket.disconnect();
-    return;
-  }
+    if (!socket.user) {
+      socket.disconnect();
+      return;
+    }
 
     // ── joinEvent ────────────────────────────────────────────────────────────
     socket.on("joinEvent", async ({ eventId }) => {
       try {
         const eventIdNum = Number(eventId);
 
-        const event = await prisma.event.findUnique({ where: { id: eventIdNum } });
+        const event = await prisma.event.findUnique({
+          where: { id: eventIdNum },
+        });
         if (!event) {
           return socket.emit("wallError", { error: "Evento no encontrado" });
         }
@@ -110,7 +112,9 @@ module.exports = (io) => {
         }
 
         // Revalidar permiso: el usuario puede haberse desinscrito después de unirse.
-        const event = await prisma.event.findUnique({ where: { id: eventIdNum } });
+        const event = await prisma.event.findUnique({
+          where: { id: eventIdNum },
+        });
         if (!event) {
           socket.leave(room);
           return socket.emit("wallError", { error: "Evento no encontrado" });

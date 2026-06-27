@@ -3,7 +3,7 @@ const router = express.Router();
 const userController = require("../controllers/user.controller");
 const enrollmentController = require("../controllers/enrollment.controller");
 const ratingController = require("../controllers/rating.controller");
-const auth         = require("../middlewares/auth.middleware");
+const auth = require("../middlewares/auth.middleware");
 const requireAdmin = require("../middlewares/admin.middleware");
 
 /**
@@ -202,7 +202,12 @@ router.get("/admin/users", auth, requireAdmin, userController.getAllUsers);
  *       404:
  *         description: Usuario no encontrado
  */
-router.delete("/admin/users/:id", auth, requireAdmin, userController.deleteUser);
+router.delete(
+  "/admin/users/:id",
+  auth,
+  requireAdmin,
+  userController.deleteUser,
+);
 
 /**
  * @swagger
@@ -240,6 +245,11 @@ router.delete("/admin/users/:id", auth, requireAdmin, userController.deleteUser)
  *       400:
  *         description: Rol no válido o intentas cambiar tu propio rol
  */
-router.patch("/admin/users/:id/role", auth, requireAdmin, userController.updateUserRole);
+router.patch(
+  "/admin/users/:id/role",
+  auth,
+  requireAdmin,
+  userController.updateUserRole,
+);
 
 module.exports = router;

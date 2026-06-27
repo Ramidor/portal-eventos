@@ -2,7 +2,7 @@ const cloudinary = require("cloudinary").v2;
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key:    process.env.CLOUDINARY_API_KEY,
+  api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
@@ -13,7 +13,7 @@ function uploadToCloudinary(buffer, mimetype) {
   return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
       { folder: "portal-eventos", resource_type: "image" },
-      (error, result) => (error ? reject(error) : resolve(result.secure_url))
+      (error, result) => (error ? reject(error) : resolve(result.secure_url)),
     );
     stream.end(buffer);
   });
@@ -26,11 +26,13 @@ exports.uploadImages = async (req, res) => {
       return res.status(400).json({ error: "No se enviaron imágenes" });
     }
     if (req.files.length > MAX_IMAGES) {
-      return res.status(400).json({ error: `Máximo ${MAX_IMAGES} imágenes por subida` });
+      return res
+        .status(400)
+        .json({ error: `Máximo ${MAX_IMAGES} imágenes por subida` });
     }
 
     const urls = await Promise.all(
-      req.files.map((f) => uploadToCloudinary(f.buffer, f.mimetype))
+      req.files.map((f) => uploadToCloudinary(f.buffer, f.mimetype)),
     );
 
     res.json({ urls });

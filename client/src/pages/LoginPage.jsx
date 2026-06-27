@@ -31,7 +31,7 @@ export default function LoginPage() {
       const serverError = err.response?.data?.error || "Error al iniciar sesión";
       const code        = err.response?.data?.code;
       
-      // 2. MODIFICADO: Activamos el estado si el backend nos devuelve el código
+      // Activamos el estado si el backend nos devuelve el código
       if (code === "EMAIL_NOT_VERIFIED") {
         navigate("/verify-email", { state: { email: form.email } });
       } else {

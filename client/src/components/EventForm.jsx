@@ -24,29 +24,35 @@ function MapClickHandler({ onLocationSelect }) {
   return null;
 }
 
-export default function EventForm({ initialData = {}, onSubmit, loading, error, submitLabel = "Guardar" }) {
+export default function EventForm({
+  initialData = {},
+  onSubmit,
+  loading,
+  error,
+  submitLabel = "Guardar",
+}) {
   const [form, setForm] = useState({
-    title:        initialData.title        || "",
-    description:  initialData.description  || "",
-    date:         toDatetimeLocal(initialData.date),
-    location:     initialData.location     || "",
-    latitude:     initialData.latitude     || null,
-    longitude:    initialData.longitude    || null,
-    category:     initialData.category     || "OTRO",
+    title: initialData.title || "",
+    description: initialData.description || "",
+    date: toDatetimeLocal(initialData.date),
+    location: initialData.location || "",
+    latitude: initialData.latitude || null,
+    longitude: initialData.longitude || null,
+    category: initialData.category || "OTRO",
     maxAttendees: initialData.maxAttendees || "",
   });
 
-  const [images, setImages]           = useState(initialData.images || []);
-  const [uploading, setUploading]     = useState(false);
+  const [images, setImages] = useState(initialData.images || []);
+  const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
 
-  const [searchQuery, setSearchQuery]   = useState(initialData.location || "");
-  const [searching, setSearching]       = useState(false);
-  const [searchError, setSearchError]   = useState("");
-  const [mapCenter, setMapCenter]       = useState(
+  const [searchQuery, setSearchQuery] = useState(initialData.location || "");
+  const [searching, setSearching] = useState(false);
+  const [searchError, setSearchError] = useState("");
+  const [mapCenter, setMapCenter] = useState(
     initialData.latitude && initialData.longitude
       ? [initialData.latitude, initialData.longitude]
-      : [40.416775, -3.703790] // Madrid por defecto
+      : [40.416775, -3.70379], // Madrid por defecto
   );
   const mapRef = useRef(null);
 
@@ -62,7 +68,7 @@ export default function EventForm({ initialData = {}, onSubmit, loading, error, 
     try {
       const res = await fetch(
         `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&limit=1`,
-        { headers: { "Accept-Language": "es" } }
+        { headers: { "Accept-Language": "es" } },
       );
       const data = await res.json();
       if (data.length === 0) {
@@ -90,7 +96,9 @@ export default function EventForm({ initialData = {}, onSubmit, loading, error, 
   const handleMapClick = (lat, lng) => {
     setForm((prev) => ({ ...prev, latitude: lat, longitude: lng }));
     // Geocodificación inversa para obtener el nombre
-    fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+    fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`,
+    )
       .then((r) => r.json())
       .then((data) => {
         if (data.display_name) {
@@ -106,13 +114,17 @@ export default function EventForm({ initialData = {}, onSubmit, loading, error, 
     if (!files.length) return;
     const remaining = MAX_IMAGES - images.length;
     if (files.length > remaining) {
-      setUploadError(`Solo puedes añadir ${remaining} imagen${remaining !== 1 ? "es" : ""} más (máx. ${MAX_IMAGES})`);
+      setUploadError(
+        `Solo puedes añadir ${remaining} imagen${remaining !== 1 ? "es" : ""} más (máx. ${MAX_IMAGES})`,
+      );
       e.target.value = "";
       return;
     }
     const tooBig = files.filter((f) => f.size > 5 * 1024 * 1024);
     if (tooBig.length) {
-      setUploadError(`${tooBig.map((f) => f.name).join(", ")} supera${tooBig.length > 1 ? "n" : ""} los 5 MB permitidos`);
+      setUploadError(
+        `${tooBig.map((f) => f.name).join(", ")} supera${tooBig.length > 1 ? "n" : ""} los 5 MB permitidos`,
+      );
       e.target.value = "";
       return;
     }
@@ -124,7 +136,9 @@ export default function EventForm({ initialData = {}, onSubmit, loading, error, 
       const { data } = await api.post("/upload", formData);
       setImages((prev) => [...prev, ...data.urls]);
     } catch {
-      setUploadError("Error al subir las imágenes. Comprueba el formato y el tamaño (máx. 5 MB).");
+      setUploadError(
+        "Error al subir las imágenes. Comprueba el formato y el tamaño (máx. 5 MB).",
+      );
     } finally {
       setUploading(false);
       e.target.value = "";
@@ -152,14 +166,17 @@ export default function EventForm({ initialData = {}, onSubmit, loading, error, 
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-
       {/* Título */}
       <div>
         <label className="block text-zinc-400 text-xs font-mono tracking-widest uppercase mb-2">
           Título <span className="text-orange-400">*</span>
         </label>
         <input
-          type="text" name="title" value={form.title} onChange={handleChange} required
+          type="text"
+          name="title"
+          value={form.title}
+          onChange={handleChange}
+          required
           placeholder="Nombre del evento"
           className="w-full bg-zinc-900 border border-zinc-700 text-zinc-100 rounded-lg px-4 py-3 text-sm placeholder-zinc-600 focus:outline-none focus:border-orange-400 transition-colors"
         />
@@ -171,11 +188,15 @@ export default function EventForm({ initialData = {}, onSubmit, loading, error, 
           Categoría <span className="text-orange-400">*</span>
         </label>
         <select
-          name="category" value={form.category} onChange={handleChange}
+          name="category"
+          value={form.category}
+          onChange={handleChange}
           className="w-full bg-zinc-900 border border-zinc-700 text-zinc-100 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-orange-400 transition-colors"
         >
           {CATEGORIES.map((c) => (
-            <option key={c.value} value={c.value}>{c.label}</option>
+            <option key={c.value} value={c.value}>
+              {c.label}
+            </option>
           ))}
         </select>
       </div>
@@ -186,7 +207,10 @@ export default function EventForm({ initialData = {}, onSubmit, loading, error, 
           Descripción
         </label>
         <textarea
-          name="description" value={form.description} onChange={handleChange} rows={4}
+          name="description"
+          value={form.description}
+          onChange={handleChange}
+          rows={4}
           placeholder="Describe el evento..."
           className="w-full bg-zinc-900 border border-zinc-700 text-zinc-100 rounded-lg px-4 py-3 text-sm placeholder-zinc-600 focus:outline-none focus:border-orange-400 transition-colors resize-none"
         />
@@ -198,8 +222,12 @@ export default function EventForm({ initialData = {}, onSubmit, loading, error, 
           Fecha y hora <span className="text-orange-400">*</span>
         </label>
         <input
-          type="datetime-local" name="date" value={form.date} onChange={handleChange}
-          required min={minDateStr}
+          type="datetime-local"
+          name="date"
+          value={form.date}
+          onChange={handleChange}
+          required
+          min={minDateStr}
           className="w-full bg-zinc-900 border border-zinc-700 text-zinc-100 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-orange-400 transition-colors [color-scheme:dark]"
         />
       </div>
@@ -213,14 +241,19 @@ export default function EventForm({ initialData = {}, onSubmit, loading, error, 
         {/* Buscador de dirección */}
         <div className="flex gap-2 mb-3">
           <input
-            type="text" value={searchQuery}
+            type="text"
+            value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleSearch())}
+            onKeyDown={(e) =>
+              e.key === "Enter" && (e.preventDefault(), handleSearch())
+            }
             placeholder="Busca una dirección o lugar..."
             className="flex-1 bg-zinc-900 border border-zinc-700 text-zinc-100 rounded-lg px-4 py-3 text-sm placeholder-zinc-600 focus:outline-none focus:border-orange-400 transition-colors"
           />
           <button
-            type="button" onClick={handleSearch} disabled={searching}
+            type="button"
+            onClick={handleSearch}
+            disabled={searching}
             className="bg-zinc-700 hover:bg-zinc-600 text-zinc-100 px-4 py-3 rounded-lg text-sm transition-colors cursor-pointer disabled:opacity-50"
           >
             {searching ? "..." : "Buscar"}
@@ -233,15 +266,25 @@ export default function EventForm({ initialData = {}, onSubmit, loading, error, 
 
         {/* Campo de texto editable con el nombre del lugar */}
         <input
-          type="text" name="location" value={form.location} onChange={handleChange} required
-          placeholder={form.location ? "Nombre del lugar" : "Nombre del lugar (busca arriba o haz clic en el mapa)"}
+          type="text"
+          name="location"
+          value={form.location}
+          onChange={handleChange}
+          required
+          placeholder={
+            form.location
+              ? "Nombre del lugar"
+              : "Nombre del lugar (busca arriba o haz clic en el mapa)"
+          }
           className="w-full bg-zinc-900 border border-zinc-700 text-zinc-100 rounded-lg px-4 py-3 text-sm placeholder-zinc-600 focus:outline-none focus:border-orange-400 transition-colors mb-3"
         />
 
         {/* Mapa */}
         <div className="rounded-xl overflow-hidden border border-zinc-700 h-64">
           <MapContainer
-            center={mapCenter} zoom={13} style={{ height: "100%", width: "100%" }}
+            center={mapCenter}
+            zoom={13}
+            style={{ height: "100%", width: "100%" }}
             ref={mapRef}
           >
             <TileLayer
@@ -274,7 +317,8 @@ export default function EventForm({ initialData = {}, onSubmit, loading, error, 
             {images.map((url, i) => (
               <div key={i} className="relative group">
                 <img
-                  src={url} alt=""
+                  src={url}
+                  alt=""
                   className="w-full h-24 object-cover rounded-lg border border-zinc-700"
                 />
                 <button
@@ -296,7 +340,9 @@ export default function EventForm({ initialData = {}, onSubmit, loading, error, 
 
         {/* Botón añadir */}
         {images.length < MAX_IMAGES && (
-          <label className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg border border-dashed border-zinc-700 text-zinc-400 hover:border-orange-400 hover:text-orange-400 transition-colors text-sm ${uploading ? "opacity-50 pointer-events-none" : "cursor-pointer"}`}>
+          <label
+            className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg border border-dashed border-zinc-700 text-zinc-400 hover:border-orange-400 hover:text-orange-400 transition-colors text-sm ${uploading ? "opacity-50 pointer-events-none" : "cursor-pointer"}`}
+          >
             <input
               type="file"
               accept="image/jpeg,image/png,image/webp,image/gif"
@@ -321,11 +367,18 @@ export default function EventForm({ initialData = {}, onSubmit, loading, error, 
       {/* Aforo máximo */}
       <div>
         <label className="block text-zinc-400 text-xs font-mono tracking-widest uppercase mb-2">
-          Aforo máximo <span className="text-zinc-600 normal-case font-sans tracking-normal">— opcional</span>
+          Aforo máximo{" "}
+          <span className="text-zinc-600 normal-case font-sans tracking-normal">
+            — opcional
+          </span>
         </label>
         <input
-          type="number" name="maxAttendees" value={form.maxAttendees} onChange={handleChange}
-          min="1" placeholder="Sin límite"
+          type="number"
+          name="maxAttendees"
+          value={form.maxAttendees}
+          onChange={handleChange}
+          min="1"
+          placeholder="Sin límite"
           className="w-full bg-zinc-900 border border-zinc-700 text-zinc-100 rounded-lg px-4 py-3 text-sm placeholder-zinc-600 focus:outline-none focus:border-orange-400 transition-colors"
         />
       </div>
@@ -337,12 +390,12 @@ export default function EventForm({ initialData = {}, onSubmit, loading, error, 
       )}
 
       <button
-        type="submit" disabled={loading}
+        type="submit"
+        disabled={loading}
         className="w-full bg-orange-400 hover:bg-orange-300 disabled:bg-zinc-700 disabled:text-zinc-500 text-zinc-950 font-semibold py-3 rounded-lg text-sm transition-colors duration-200 cursor-pointer"
       >
         {loading ? "Guardando..." : submitLabel}
       </button>
-
     </form>
   );
 }

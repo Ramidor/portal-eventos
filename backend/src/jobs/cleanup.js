@@ -1,4 +1,4 @@
-const cron  = require("node-cron");
+const cron = require("node-cron");
 const prisma = require("../config/prisma");
 
 function startCleanupJob() {
@@ -16,7 +16,9 @@ function startCleanupJob() {
       });
 
       if (usersDeleted > 0) {
-        console.log(`[CRON] Usuarios sin verificar eliminados: ${usersDeleted}`);
+        console.log(
+          `[CRON] Usuarios sin verificar eliminados: ${usersDeleted}`,
+        );
       }
     } catch (error) {
       console.error("[CRON] Error en limpieza:", error);

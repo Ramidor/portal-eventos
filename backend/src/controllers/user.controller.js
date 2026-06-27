@@ -1,5 +1,5 @@
-const prisma  = require("../config/prisma");
-const bcrypt  = require("bcrypt");
+const prisma = require("../config/prisma");
+const bcrypt = require("bcrypt");
 const parseId = require("../utils/parseId");
 const { sendAccountDeleted } = require("../services/email.service");
 const { PASSWORD_REGEX } = require("../utils/validation");
@@ -9,7 +9,11 @@ exports.getMe = async (req, res) => {
     const user = await prisma.user.findUnique({
       where: { id: req.user.id },
       select: {
-        id: true, name: true, email: true, role: true, createdAt: true,
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        createdAt: true,
         _count: { select: { organizedEvents: true, enrollments: true } },
       },
     });
@@ -32,27 +36,46 @@ exports.updateMe = async (req, res) => {
     // Si quiere cambiar contraseña, verificar la actual primero
     if (newPassword) {
       if (!currentPassword) {
-        return res.status(400).json({ error: "Debes proporcionar tu contraseña actual para cambiarla" });
+        return res
+          .status(400)
+          .json({
+            error: "Debes proporcionar tu contraseña actual para cambiarla",
+          });
       }
       if (!PASSWORD_REGEX.test(newPassword)) {
-        return res.status(400).json({ error: "La nueva contraseña debe tener al menos 8 caracteres, una mayúscula, un número y un símbolo" });
+        return res
+          .status(400)
+          .json({
+            error:
+              "La nueva contraseña debe tener al menos 8 caracteres, una mayúscula, un número y un símbolo",
+          });
       }
       const user = await prisma.user.findUnique({ where: { id: userId } });
       const valid = await bcrypt.compare(currentPassword, user.password);
       if (!valid) {
-        return res.status(400).json({ error: "La contraseña actual no es correcta" });
+        return res
+          .status(400)
+          .json({ error: "La contraseña actual no es correcta" });
       }
       data.password = await bcrypt.hash(newPassword, 10);
     }
 
     if (Object.keys(data).length === 0) {
-      return res.status(400).json({ error: "No se proporcionaron campos para actualizar" });
+      return res
+        .status(400)
+        .json({ error: "No se proporcionaron campos para actualizar" });
     }
 
     const updated = await prisma.user.update({
       where: { id: userId },
       data,
-      select: { id: true, name: true, email: true, role: true, createdAt: true },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        createdAt: true,
+      },
     });
 
     res.json({ message: "Perfil actualizado", user: updated });
@@ -80,7 +103,11 @@ exports.getAllUsers = async (req, res) => {
   try {
     const users = await prisma.user.findMany({
       select: {
-        id: true, name: true, email: true, role: true, createdAt: true,
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        createdAt: true,
         _count: { select: { organizedEvents: true, enrollments: true } },
       },
       orderBy: { createdAt: "asc" },
@@ -96,7 +123,8 @@ exports.deleteUser = async (req, res) => {
   try {
     const targetId = parseId(req.params.id);
     if (!targetId) return res.status(400).json({ error: "ID no válido" });
-    if (targetId === req.user.id) return res.status(400).json({ error: "No puedes eliminarte a ti mismo" });
+    if (targetId === req.user.id)
+      return res.status(400).json({ error: "No puedes eliminarte a ti mismo" });
     const user = await prisma.user.findUnique({ where: { id: targetId } });
     if (!user) return res.status(404).json({ error: "Usuario no encontrado" });
     // Los eventos del usuario no tienen onDelete:Cascade en el schema, hay que borrarlos
@@ -118,8 +146,10 @@ exports.updateUserRole = async (req, res) => {
     const targetId = parseId(req.params.id);
     if (!targetId) return res.status(400).json({ error: "ID no válido" });
     const { role } = req.body;
-    if (!["USER", "ADMIN"].includes(role)) return res.status(400).json({ error: "Rol no válido" });
-    if (targetId === req.user.id) return res.status(400).json({ error: "No puedes cambiar tu propio rol" });
+    if (!["USER", "ADMIN"].includes(role))
+      return res.status(400).json({ error: "Rol no válido" });
+    if (targetId === req.user.id)
+      return res.status(400).json({ error: "No puedes cambiar tu propio rol" });
     const user = await prisma.user.findUnique({ where: { id: targetId } });
     if (!user) return res.status(404).json({ error: "Usuario no encontrado" });
     const updated = await prisma.user.update({
@@ -152,7 +182,7 @@ exports.getPublicProfile = async (req, res) => {
       }),
       prisma.rating.aggregate({
         where: { creatorId: targetId },
-        _avg:   { score: true },
+        _avg: { score: true },
         _count: { score: true },
       }),
       prisma.rating.findMany({
@@ -172,8 +202,10 @@ exports.getPublicProfile = async (req, res) => {
       user,
       events,
       ratingSummary: {
-        average: ratingAgg._avg.score ? Math.round(ratingAgg._avg.score * 10) / 10 : null,
-        total:   ratingAgg._count.score,
+        average: ratingAgg._avg.score
+          ? Math.round(ratingAgg._avg.score * 10) / 10
+          : null,
+        total: ratingAgg._count.score,
       },
       ratings,
     });

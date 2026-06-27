@@ -43,14 +43,15 @@ export default function EventWall({ eventId }) {
 
   return (
     <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
-
       {/* Cabecera */}
       <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800">
         <h2 className="text-zinc-400 font-mono text-xs tracking-widest uppercase">
           Muro del evento
         </h2>
         <div className="flex items-center gap-2">
-          <span className={`w-2 h-2 rounded-full ${connected ? "bg-green-500" : "bg-zinc-600"}`} />
+          <span
+            className={`w-2 h-2 rounded-full ${connected ? "bg-green-500" : "bg-zinc-600"}`}
+          />
           <span className="text-zinc-600 font-mono text-xs">
             {connected ? "En vivo" : "Conectando..."}
           </span>
@@ -75,7 +76,8 @@ export default function EventWall({ eventId }) {
         {messages.map((msg) => {
           const isOwn = msg.userId === user.id;
           const time = new Date(msg.createdAt).toLocaleTimeString("es-ES", {
-            hour: "2-digit", minute: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
           });
 
           return (
@@ -83,11 +85,13 @@ export default function EventWall({ eventId }) {
               key={msg.id}
               className={`flex flex-col ${isOwn ? "items-end" : "items-start"}`}
             >
-              <div className={`max-w-xs lg:max-w-sm rounded-xl px-4 py-2 ${
-                isOwn
-                  ? "bg-orange-400 text-zinc-950"
-                  : "bg-zinc-800 text-zinc-200"
-              }`}>
+              <div
+                className={`max-w-xs lg:max-w-sm rounded-xl px-4 py-2 ${
+                  isOwn
+                    ? "bg-orange-400 text-zinc-950"
+                    : "bg-zinc-800 text-zinc-200"
+                }`}
+              >
                 {!isOwn && (
                   <p className="text-xs font-semibold mb-1 text-zinc-400">
                     {msg.user?.name}
@@ -99,7 +103,6 @@ export default function EventWall({ eventId }) {
             </div>
           );
         })}
-
       </div>
 
       {/* Input */}
@@ -110,7 +113,9 @@ export default function EventWall({ eventId }) {
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder={connected ? "Escribe un mensaje..." : "Conectando..."}
+              placeholder={
+                connected ? "Escribe un mensaje..." : "Conectando..."
+              }
               disabled={!connected}
               maxLength={500}
               className="flex-1 bg-zinc-800 border border-zinc-700 text-zinc-100 rounded-lg px-4 py-2 text-sm placeholder-zinc-600 focus:outline-none focus:border-orange-400 transition-colors disabled:opacity-50"
@@ -125,7 +130,6 @@ export default function EventWall({ eventId }) {
           </form>
         )}
       </div>
-
     </div>
   );
 }

@@ -1,9 +1,9 @@
-const express  = require("express");
-const router   = express.Router();
-const auth           = require("../middlewares/auth.middleware");
-const upload         = require("../middlewares/upload.middleware");
+const express = require("express");
+const router = express.Router();
+const auth = require("../middlewares/auth.middleware");
+const upload = require("../middlewares/upload.middleware");
 const { uploadLimiter } = require("../middlewares/rateLimiter.middleware");
-const uploadController  = require("../controllers/upload.controller");
+const uploadController = require("../controllers/upload.controller");
 
 /**
  * @swagger
@@ -54,6 +54,12 @@ const uploadController  = require("../controllers/upload.controller");
  *       429:
  *         description: Demasiadas subidas (límite 20 por 15 minutos)
  */
-router.post("/", auth, uploadLimiter, upload.array("images", 5), uploadController.uploadImages);
+router.post(
+  "/",
+  auth,
+  uploadLimiter,
+  upload.array("images", 5),
+  uploadController.uploadImages,
+);
 
 module.exports = router;

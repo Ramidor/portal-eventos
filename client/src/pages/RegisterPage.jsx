@@ -3,26 +3,33 @@ import { Link, useNavigate } from "react-router-dom";
 import api from "../services/api";
 import AuthLayout from "../components/AuthLayout";
 
-const PASSWORD_REGEX = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()\-_=+{};:,<.>]).{8,}$/;
+const PASSWORD_REGEX =
+  /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()\-_=+{};:,<.>]).{8,}$/;
 
 function PasswordStrength({ password }) {
   if (!password) return null;
 
   const checks = [
     { label: "8 caracteres mínimo", ok: password.length >= 8 },
-    { label: "Una mayúscula",        ok: /[A-Z]/.test(password) },
-    { label: "Un número",            ok: /\d/.test(password) },
-    { label: "Un símbolo",           ok: /[!@#$%^&*()\-_=+{};:,<.>]/.test(password) },
+    { label: "Una mayúscula", ok: /[A-Z]/.test(password) },
+    { label: "Un número", ok: /\d/.test(password) },
+    { label: "Un símbolo", ok: /[!@#$%^&*()\-_=+{};:,<.>]/.test(password) },
   ];
 
   return (
     <div className="mt-2 space-y-1">
       {checks.map((c) => (
         <div key={c.label} className="flex items-center gap-2">
-          <span className={`text-xs font-mono ${c.ok ? "text-green-400" : "text-zinc-600"}`}>
+          <span
+            className={`text-xs font-mono ${c.ok ? "text-green-400" : "text-zinc-600"}`}
+          >
             {c.ok ? "✓" : "○"}
           </span>
-          <span className={`text-xs ${c.ok ? "text-zinc-400" : "text-zinc-600"}`}>{c.label}</span>
+          <span
+            className={`text-xs ${c.ok ? "text-zinc-400" : "text-zinc-600"}`}
+          >
+            {c.label}
+          </span>
         </div>
       ))}
     </div>
@@ -31,11 +38,14 @@ function PasswordStrength({ password }) {
 
 export default function RegisterPage() {
   const navigate = useNavigate();
-  const [form, setForm]       = useState({ name: "", email: "", password: "" });
-  const [error, setError]     = useState("");
+  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) => { setForm({ ...form, [e.target.name]: e.target.value }); setError(""); };
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+    setError("");
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -56,42 +66,91 @@ export default function RegisterPage() {
 
   return (
     <AuthLayout
-      headline={<>Tu próximo<br />evento<br /><span className="text-orange-400">te espera.</span></>}
+      headline={
+        <>
+          Tu próximo
+          <br />
+          evento
+          <br />
+          <span className="text-orange-400">te espera.</span>
+        </>
+      }
       subtitle="Únete y empieza a organizar o descubrir eventos. Sin restricciones de rol."
     >
       <div className="w-full max-w-sm">
         <div className="mb-10">
-          <p className="text-zinc-500 font-mono text-xs tracking-widest uppercase mb-2">Nuevo usuario</p>
+          <p className="text-zinc-500 font-mono text-xs tracking-widest uppercase mb-2">
+            Nuevo usuario
+          </p>
           <h2 className="text-3xl font-serif text-zinc-100">Crear cuenta</h2>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-zinc-400 text-xs font-mono tracking-widest uppercase mb-2">Nombre</label>
-            <input type="text" name="name" value={form.name} onChange={handleChange} required placeholder="Tu nombre"
-              className="w-full bg-zinc-900 border border-zinc-700 text-zinc-100 rounded-lg px-4 py-3 text-sm placeholder-zinc-600 focus:outline-none focus:border-orange-400 transition-colors" />
+            <label className="block text-zinc-400 text-xs font-mono tracking-widest uppercase mb-2">
+              Nombre
+            </label>
+            <input
+              type="text"
+              name="name"
+              value={form.name}
+              onChange={handleChange}
+              required
+              placeholder="Tu nombre"
+              className="w-full bg-zinc-900 border border-zinc-700 text-zinc-100 rounded-lg px-4 py-3 text-sm placeholder-zinc-600 focus:outline-none focus:border-orange-400 transition-colors"
+            />
           </div>
           <div>
-            <label className="block text-zinc-400 text-xs font-mono tracking-widest uppercase mb-2">Email</label>
-            <input type="email" name="email" value={form.email} onChange={handleChange} required placeholder="tu@email.com"
-              className="w-full bg-zinc-900 border border-zinc-700 text-zinc-100 rounded-lg px-4 py-3 text-sm placeholder-zinc-600 focus:outline-none focus:border-orange-400 transition-colors" />
+            <label className="block text-zinc-400 text-xs font-mono tracking-widest uppercase mb-2">
+              Email
+            </label>
+            <input
+              type="email"
+              name="email"
+              value={form.email}
+              onChange={handleChange}
+              required
+              placeholder="tu@email.com"
+              className="w-full bg-zinc-900 border border-zinc-700 text-zinc-100 rounded-lg px-4 py-3 text-sm placeholder-zinc-600 focus:outline-none focus:border-orange-400 transition-colors"
+            />
           </div>
           <div>
-            <label className="block text-zinc-400 text-xs font-mono tracking-widest uppercase mb-2">Contraseña</label>
-            <input type="password" name="password" value={form.password} onChange={handleChange} required placeholder="Mínimo 8 caracteres"
-              className="w-full bg-zinc-900 border border-zinc-700 text-zinc-100 rounded-lg px-4 py-3 text-sm placeholder-zinc-600 focus:outline-none focus:border-orange-400 transition-colors" />
+            <label className="block text-zinc-400 text-xs font-mono tracking-widest uppercase mb-2">
+              Contraseña
+            </label>
+            <input
+              type="password"
+              name="password"
+              value={form.password}
+              onChange={handleChange}
+              required
+              placeholder="Mínimo 8 caracteres"
+              className="w-full bg-zinc-900 border border-zinc-700 text-zinc-100 rounded-lg px-4 py-3 text-sm placeholder-zinc-600 focus:outline-none focus:border-orange-400 transition-colors"
+            />
             <PasswordStrength password={form.password} />
           </div>
-          {error && <p className="text-red-400 text-xs font-mono bg-red-950/30 border border-red-900 rounded-lg px-4 py-3">{error}</p>}
-          <button type="submit" disabled={loading}
-            className="w-full bg-orange-400 hover:bg-orange-300 disabled:bg-zinc-700 disabled:text-zinc-500 text-zinc-950 font-semibold py-3 rounded-lg text-sm transition-colors cursor-pointer">
+          {error && (
+            <p className="text-red-400 text-xs font-mono bg-red-950/30 border border-red-900 rounded-lg px-4 py-3">
+              {error}
+            </p>
+          )}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-orange-400 hover:bg-orange-300 disabled:bg-zinc-700 disabled:text-zinc-500 text-zinc-950 font-semibold py-3 rounded-lg text-sm transition-colors cursor-pointer"
+          >
             {loading ? "Enviando código..." : "Crear cuenta"}
           </button>
         </form>
 
         <p className="mt-8 text-center text-zinc-500 text-sm">
           ¿Ya tienes cuenta?{" "}
-          <Link to="/login" className="text-orange-400 hover:text-orange-300 transition-colors">Inicia sesión</Link>
+          <Link
+            to="/login"
+            className="text-orange-400 hover:text-orange-300 transition-colors"
+          >
+            Inicia sesión
+          </Link>
         </p>
       </div>
     </AuthLayout>

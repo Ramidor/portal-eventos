@@ -1,13 +1,13 @@
-const cron  = require("node-cron");
+const cron = require("node-cron");
 const prisma = require("../config/prisma");
 const { sendEventReminder } = require("../services/email.service");
 
 function startRemindersJob() {
   // Ejecutar cada día a las 9:00 AM
   cron.schedule("0 9 * * *", async () => {
-    const now      = new Date();
-    const in24h    = new Date(now.getTime() + 24 * 60 * 60 * 1000);
-    const in48h    = new Date(now.getTime() + 48 * 60 * 60 * 1000);
+    const now = new Date();
+    const in24h = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    const in48h = new Date(now.getTime() + 48 * 60 * 60 * 1000);
 
     try {
       const events = await prisma.event.findMany({
@@ -25,16 +25,21 @@ function startRemindersJob() {
               enrollment.user.email,
               event.title,
               event.date,
-              event.location
+              event.location,
             );
             sent++;
           } catch (err) {
-            console.error(`[REMINDERS] Error enviando a ${enrollment.user.email}:`, err.message);
+            console.error(
+              `[REMINDERS] Error enviando a ${enrollment.user.email}:`,
+              err.message,
+            );
           }
         }
       }
 
-      console.log(`[REMINDERS] Recordatorios enviados: ${sent} (${events.length} eventos mañana)`);
+      console.log(
+        `[REMINDERS] Recordatorios enviados: ${sent} (${events.length} eventos mañana)`,
+      );
     } catch (error) {
       console.error("[REMINDERS] Error en job de recordatorios:", error);
     }

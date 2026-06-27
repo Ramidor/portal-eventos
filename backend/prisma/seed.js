@@ -361,6 +361,36 @@ async function main() {
   ]});
   console.log("💬 Mensajes en muros creados");
 
+  // ── Evento del día de la presentación (martes 30 de junio) ────────────────
+  const eventoHoy = await prisma.event.create({ data: {
+    title: "Meetup de Desarrollo Web: De la Idea a Producción",
+    description: "Encuentro de desarrolladores para compartir experiencias llevando proyectos web desde el primer commit hasta producción. Charlas cortas, demos en directo y networking posterior.",
+    date: new Date("2026-06-30T19:00:00"),
+    location: "Talent Garden, Madrid",
+    latitude: 40.4505, longitude: -3.6900,
+    category: "TECNOLOGIA", maxAttendees: 50, creatorId: carlos.id,
+    images: ["https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800"],
+  }});
+
+  await prisma.enrollment.createMany({ data: [
+    { userId: ana.id,    eventId: eventoHoy.id },
+    { userId: lucia.id,  eventId: eventoHoy.id },
+    { userId: mario.id,  eventId: eventoHoy.id },
+    { userId: sofia.id,  eventId: eventoHoy.id },
+    { userId: david.id,  eventId: eventoHoy.id },
+    { userId: javier.id, eventId: eventoHoy.id },
+  ]});
+
+  await prisma.message.createMany({ data: [
+    { content: "¡Qué ganas de ver las demos de hoy!", userId: ana.id, eventId: eventoHoy.id },
+    { content: "¿A qué hora abren puertas?", userId: lucia.id, eventId: eventoHoy.id },
+    { content: "Sobre las 18:30, la charla empieza a las 19:00 en punto.", userId: carlos.id, eventId: eventoHoy.id },
+    { content: "Genial, nos vemos allí 🚀", userId: mario.id, eventId: eventoHoy.id },
+    { content: "¿Habrá grabación para los que no podamos llegar a tiempo?", userId: sofia.id, eventId: eventoHoy.id },
+    { content: "Sí, subiremos la grabación esta misma semana.", userId: carlos.id, eventId: eventoHoy.id },
+  ]});
+  console.log("📅 Evento del día de la presentación creado (martes 30 de junio)");
+
   // ── 8 eventos pasados ─────────────────────────────────────────────────────
   const [ep1, ep2, ep3, ep4, ep5, ep6, ep7, ep8] = await Promise.all([
     prisma.event.create({ data: {

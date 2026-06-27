@@ -1,4 +1,4 @@
-const prisma  = require("../config/prisma");
+const prisma = require("../config/prisma");
 const parseId = require("../utils/parseId");
 
 exports.getMessages = async (req, res) => {
@@ -10,7 +10,7 @@ exports.getMessages = async (req, res) => {
     const limit = Math.min(100, Number(req.query.limit) || 50);
     const skip = (page - 1) * limit;
 
-    const event = await prisma.event.findUnique({ where: { id: eventId  } });
+    const event = await prisma.event.findUnique({ where: { id: eventId } });
     if (!event) return res.status(404).json({ error: "Evento no encontrado" });
 
     const isCreator = event.creatorId === userId;

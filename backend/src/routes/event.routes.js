@@ -1,9 +1,9 @@
 const express = require("express");
-const router  = express.Router();
-const eventController      = require("../controllers/event.controller");
+const router = express.Router();
+const eventController = require("../controllers/event.controller");
 const enrollmentController = require("../controllers/enrollment.controller");
-const ratingController     = require("../controllers/rating.controller");
-const auth         = require("../middlewares/auth.middleware");
+const ratingController = require("../controllers/rating.controller");
+const auth = require("../middlewares/auth.middleware");
 const requireAdmin = require("../middlewares/admin.middleware");
 
 /**
@@ -243,7 +243,11 @@ router.delete("/:id", auth, eventController.remove);
  *               properties:
  *                 isEnrolled: { type: boolean, example: true }
  */
-router.get("/:id/enrollments/me", auth, enrollmentController.getMyEnrollmentStatus);
+router.get(
+  "/:id/enrollments/me",
+  auth,
+  enrollmentController.getMyEnrollmentStatus,
+);
 
 /**
  * @swagger
